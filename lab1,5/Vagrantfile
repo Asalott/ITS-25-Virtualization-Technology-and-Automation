@@ -1,0 +1,35 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  #=========================================================================================#
+  # Creats a VM named webserver_vm1 with the ubunto as OS with port forwarding of port 8080 #
+  #=========================================================================================#
+  config.vm.define "web" do |web|
+    web.vm.box = "ubuntu/jammy64"
+    web.vm.network "forwarded_port", guest: 80, host: 8080
+    # ---- Syncs the folder the vagrantfile is in with the VM ----
+    web.vm.synced_folder ".", "/vagrant"
+    #====================================================================================================#
+    # Allocates 512mb of RAM and 1 CPU core to the VM, Also sets the name of the VM and sets gui to fals #
+    #====================================================================================================#
+    web.vm.provider "virtualbox" do |vb|
+      vb.name = "webserver_vm1"
+      vb.memory = 512
+      vb.cpus = 1
+      vb.gui = false #headles
+    end
+    #===================================================================================================#
+    # Auto uppdates and installs apache2 on the VM and replaces the defult index.html with a custom one #
+    #===================================================================================================#
+    web.vm.provision "shell", inline: <<-SHELL
+      apt-get update
+      apt-get install -y apache2
+      systemctl enable apache2
+      systemctl start apache2
+      sudo cp /vagrant/index.html /var/www/html/index.html
+      echo "WEBBSERVER_VM1 ONLINE"
+    SHELL
+  end
+end
+ 
