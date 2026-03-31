@@ -27,10 +27,13 @@ This lab sets up a virtual machine using Vagrant with Ubuntu as the operating sy
 2. Navigate to the lab folder:
 cd lab1
 
-3. (optinal) Start the virtual machine:
+3. Start the virtual machine:
 vagrant up
 
-4. Open your browser and go to:
+4. (Optional) Connect to the VM:
+   vagrant ssh
+
+5. Open your browser and go to:
 http://localhost:8080
 
 ### Files
