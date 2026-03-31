@@ -8,6 +8,11 @@ This lab sets up a virtual machine using Vagrant with Ubuntu as the operating sy
 - Set up port forwarding
 - Automatically install and run a web server
 
+### Tools Required
+- Vagrant
+- VirtualBox
+- A code editor (e.g., VS Code)
+
 ### Configuration
 - OS: Ubuntu (jammy64)
 - VM Name: webserver
@@ -22,7 +27,7 @@ This lab sets up a virtual machine using Vagrant with Ubuntu as the operating sy
 2. Navigate to the lab folder:
 cd lab1
 
-3. Start the virtual machine:
+3. (optinal) Start the virtual machine:
 vagrant up
 
 4. Open your browser and go to:
