@@ -1,4 +1,4 @@
-## Lab – Web Server with Synced Folder (Vagrant)
+## Lab 1,5 – Web Server with Synced Folder (Vagrant)
 
 ### Description
 
