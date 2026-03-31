@@ -24,7 +24,7 @@ RAM: 512 MB
 - Synced folder: Local project folder → /vagrant inside VM
 
 ### How to run
- -Open PowerShell
+ - Open PowerShell
 
 - Navigate to the lab folder:
   cd lab
