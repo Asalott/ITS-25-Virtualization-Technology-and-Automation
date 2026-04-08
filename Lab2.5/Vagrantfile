@@ -1,0 +1,217 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+RAM_512mb = 512
+RAM_1024mb = 1024
+CPU = 1
+WEBSERVER_IP = "192.168.56.10"
+WEBSERVER2_IP = "192.168.56.11"
+DBSERVER_IP = "192.168.56.12"
+LOADBARING_IP = "192.168.56.20"
+
+Vagrant.configure("2") do |config|
+
+  #========================================================================================================================================================================#
+  # Creats a VM named load_balancer with the ubunto as OS with port forwarding of port 8080 and privet network ip of 192.168.56.10 to make VM to VM communication possible #
+  #========================================================================================================================================================================#
+  config.vm.define "lb" do |lb_vm|
+    lb_vm.vm.box = "ubuntu/jammy64"
+    lb_vm.vm.network "forwarded_port", guest: 80, host: 8080
+    lb_vm.vm.network "private_network", ip: LOADBARING_IP
+
+    #====================================================================================================#
+    # Allocates 512mb of RAM and 1 CPU core to the VM, Also sets the name of the VM and sets gui to fals #
+    #====================================================================================================#
+    lb_vm.vm.provider "virtualbox" do |vb|
+      vb.name = "load_balancer"
+      vb.memory = RAM_512mb
+      vb.cpus = CPU
+      vb.gui = false #headles
+    end
+
+    #==============================================================================#
+    # Auto uppdates and install nginx and configures it to work with the other VMs #
+    #==============================================================================#
+    lb_vm.vm.provision "shell", inline: <<-SHELL
+      # Update package list
+      apt-get update
+      
+      # Install nginx (will act as load balancer / reverse proxy)
+      apt-get install -y nginx
+
+      # Overwrite default nginx configuration file
+      # Define a backend pool of servers
+      # These are the web servers nginx will forward traffic to
+      # Define the main server block
+      # Handle all incoming requests
+      # Forward requests to the backend pool (load balancing)
+      cat > /etc/nginx/sites-available/default <<'EOF'
+
+    upstream backend {
+        server 192.168.56.10;
+        server 192.168.56.11;
+    }
+
+    server {
+        listen 80;
+        server_name _;
+
+        location / {
+            proxy_pass http://backend;
+
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header Host $host;
+        }
+    }
+
+EOF
+
+  # Test nginx configuration for syntax errors
+  nginx -t
+
+  # Restart nginx to apply the new configuration
+  systemctl restart nginx
+      echo -e "\e[32m=================================\e[0m"
+      echo -e "\e[32m     LOADBARING_VM ONLINE        \e[0m"
+      echo -e "\e[32m=================================\e[0m"
+    SHELL
+  end 
+
+  #=======================================================================================================================================#
+  # Creats a VM named webserver_vm1 with the ubunto as OS with privet network ip of 192.168.56.10 to make VM to VM communication possible #
+  #=======================================================================================================================================#
+  config.vm.define "web" do |web_vm1|
+    web_vm1.vm.box = "ubuntu/jammy64"
+    web_vm1.vm.network "private_network", ip: WEBSERVER_IP
+    # ---- Syncs the folder the vagrantfile is in with the VM ----
+    web_vm1.vm.synced_folder ".", "/vagrant"
+    #====================================================================================================#
+    # Allocates 512mb of RAM and 1 CPU core to the VM, Also sets the name of the VM and sets gui to fals #
+    #====================================================================================================#
+    web_vm1.vm.provider "virtualbox" do |vb|
+      vb.name = "webserver_vm1"
+      vb.memory = RAM_512mb
+      vb.cpus = CPU
+      vb.gui = false #headles
+    end
+
+    #===================================================================================================#
+    # Auto uppdates and installs apache2 on the VM and replaces the defult index.html with a custom one #
+    #===================================================================================================#
+    web_vm1.vm.provision "shell", inline: <<-SHELL
+      apt-get update
+      apt-get install -y apache2
+      # installs mysql-client to allow the webserver connect to the VM
+      apt-get install -y mysql-client
+      # installs an extension to apache2 that allows it to run php code
+      apt-get install -y php libapache2-mod-php php-mysql
+
+      systemctl enable apache2
+      systemctl start apache2
+
+      # removes the defult index.html becous it has priority over the php filles
+      sudo rm -f /var/www/html/index.html
+
+      # inserts the index.php fille form the sheard folder to a internal folder in the VM
+      sudo cp /vagrant/index.php /var/www/html/index.php
+
+      echo -e "\e[32m=================================\e[0m"
+      echo -e "\e[32m     WEBBSERVER_VM1 ONLINE       \e[0m"
+      echo -e "\e[32m=================================\e[0m"
+    SHELL
+  end
+  
+  #======================================================================================================================================#
+  # Creats a VM named webserver_vm2 with the ubunto as OS with privet network ip of 192.168.56.11 to make VM to VM communication possible #
+  #=======================================================================================================================================#
+  config.vm.define "web2" do |web_vm2|
+    web_vm2.vm.box = "ubuntu/jammy64"
+    web_vm2.vm.network "private_network", ip: WEBSERVER2_IP
+    # ---- Syncs the folder the vagrantfile is in with the VM ----
+    web_vm2.vm.synced_folder ".", "/vagrant"
+
+    #====================================================================================================#
+    # Allocates 512mb of RAM and 1 CPU core to the VM, Also sets the name of the VM and sets gui to fals #
+    #====================================================================================================#
+    web_vm2.vm.provider "virtualbox" do |vb|
+      vb.name = "webserver_vm2"
+      vb.memory = RAM_512mb
+      vb.cpus = CPU
+      vb.gui = false #headles
+    end
+
+    web_vm2.vm.provision "shell", inline: <<-SHELL
+      apt-get update
+      apt-get install -y apache2
+      # installs mysql-client to allow the webserver connect to the VM
+      apt-get install -y mysql-client
+      # installs an extension to apache2 that allows it to run php code
+      apt-get install -y php libapache2-mod-php php-mysql
+
+      systemctl enable apache2
+      systemctl start apache2
+
+      # removes the defult index.html becous it has priority over the php filles
+      sudo rm -f /var/www/html/index.html
+
+      # inserts the index.php fille form the sheard folder to a internal folder in the VM
+      sudo cp /vagrant/index.php /var/www/html/index.php
+
+      echo -e "\e[32m=================================\e[0m"
+      echo -e "\e[32m     WEBBSERVER_VM2 ONLINE       \e[0m"
+      echo -e "\e[32m=================================\e[0m"
+    SHELL
+  end
+
+  #=====================================================================================================================================#
+  # Creats a VM named database_vm2 with the ubunto as OS and privet network ip of 192.168.56.11 to make VM to VM communication possible #
+  #=====================================================================================================================================#
+  config.vm.define "db" do |db_vm3|
+    db_vm3.vm.box = "ubuntu/jammy64"
+    db_vm3.vm.network "private_network", ip: DBSERVER_IP
+    #======================================================================================================#
+    # Allocates 1024mb of RAM and 1 CPU core to the VM, Also sets the name of the VM and sets gui to false # 
+    #======================================================================================================#
+    db_vm3.vm.provider "virtualbox" do |vb|
+      vb.name = "database_vm2"
+      vb.memory = RAM_1024mb
+      vb.cpus = CPU
+      vb.gui = false #headles
+    end
+
+    #==================================================================================================#
+    # Installs and updates every thing that is need to make this VM a db automaticly on boot of the VM #
+    #==================================================================================================#
+    db_vm3.vm.provision "shell", inline: <<-SHELL
+      apt-get update
+      apt-get install -y mysql-server
+
+      sed -i 's/^bind-address.*/bind-address = 192.168.56.12/' /etc/mysql/mysql.conf.d/mysqld.cnf
+      
+      systemctl enable mysql
+      systemctl restart mysql
+
+      # waits 5 secounds to make sure mysql is started
+      sleep 5
+
+      # Creats a user and gives it full privileges
+      sudo mysql -e "CREATE USER 'testuser'@'192.168.56.%' IDENTIFIED BY 'testpass';"
+      sudo mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'testuser'@'192.168.56.%';"
+      sudo mysql -e "FLUSH PRIVILEGES;"
+
+      # Creats a sql data base on boot with the tables timestamp, server_name and ip
+      sudo mysql -e "CREATE DATABASE webdb;"
+      sudo mysql -e "USE webdb; CREATE TABLE visits (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        timestamp DATETIME,
+        server_name VARCHAR(50),
+        ip VARCHAR(50)
+      );"
+
+      echo -e "\e[32m=================================\e[0m"
+      echo -e "\e[32m      DBSERVER_VM3 ONLINE        \e[0m"
+      echo -e "\e[32m=================================\e[0m"
+      
+    SHELL
+  end
+end
