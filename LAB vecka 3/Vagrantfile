@@ -44,6 +44,8 @@ Vagrant.configure("2") do |config|
         apt-get install -y postgresql iputils-ping ufw
         systemctl enable postgresql
         systemctl start postgresql
+        sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" /etc/postgresql/*/main/postgresql.conf
+        systemctl restart postgresql
         ufw default deny incoming 
         ufw default allow outgoing 
         ufw allow ssh
