@@ -16,7 +16,7 @@ Vagrant.configure("2") do |config|
     web.vm.network "forwarded_port", guest: 80, host: 8000
 
     web.vm.provider "virtualbox" do |vb|
-      vb.name = webbserver3
+      vb.name = "webbserver3"
       vb.memory = RAM
       vb.cpus = CPUs
     end
@@ -30,16 +30,16 @@ Vagrant.configure("2") do |config|
     SHELL
   end
   config.vm.define "database" do |db|
-    db.vm.hostname = database
+    db.vm.hostname = "database"
 
     db.vm.network "private_network", ip: DATABASE_IP
 
     db.vm.provider "virtualbox" do |vb|
-      vb.name = database3
+      vb.name = "database3"
       vb.memory = RAM
       vb.cpus = CPUs
 
-      db.vm.provision "shell" inline: <<-SHELL
+      db.vm.provision "shell", inline: <<-SHELL
         apt-get update -y
         apt-get install -y postgresql iputils-ping ufw
         systemctl enable postgresql
