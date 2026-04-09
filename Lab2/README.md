@@ -1,45 +1,40 @@
 ## LAB 2 - Database VM
-Description
+# Description
 
 This lab extends the previous setup by introducing a second virtual machine acting as a database server. The web server now runs a PHP application that connects to a MySQL database and logs visitor data.
 
 The environment demonstrates VM-to-VM communication over a private network and basic backend integration.
 
-Objective
-Create and configure two virtual machines using Vagrant
-Set up VM-to-VM communication via a private network
-Install and configure a MySQL database server
-Connect a PHP web application to a database
-Log and display dynamic data (visitor tracking)
-Tools Required
-Vagrant
-VirtualBox
-A code editor (e.g., VS Code)
-Configuration
-Web Server VM
-OS: Ubuntu (jammy64)
-RAM: 512 MB
-CPU: 1 core
-Port forwarding: Host 8080 → Guest 80
-Private IP: 192.168.56.10
-Database Server VM
-OS: Ubuntu (jammy64)
-RAM: 1024 MB
-CPU: 1 core
-Private IP: 192.168.56.11
-Architecture
-[ Your Computer ]
-       │
-       │ http://localhost:8080
-       ▼
-[ Web Server VM ] (192.168.56.10)
-       │
-       │ MySQL connection
-       ▼
-[ Database VM ] (192.168.56.11)
-How to run
-Open PowerShell
-Navigate to the lab folder:
+# Objective
+
+- Create and configure two virtual machines using Vagrant
+- Set up VM-to-VM communication via a private network
+- Install and configure a MySQL database server
+- Connect a PHP web application to a database
+- Log and display dynamic data (visitor tracking)
+
+# Tools Required
+- Vagrant
+- VirtualBox
+- A code editor (e.g., VS Code)
+
+# Configuration
+*Web Server VM*
+- OS: Ubuntu (jammy64)
+- RAM: 512 MB
+- CPU: 1 core
+- Port forwarding: Host 8080 → Guest 80
+- Private IP: 192.168.56.10
+
+*Database Server VM*
+- OS: Ubuntu (jammy64)
+- RAM: 1024 MB
+- CPU: 1 core
+- Private IP: 192.168.56.11
+
+# How to run
+- Open PowerShell
+- Navigate to the lab folder:
 cd lab2
 Start the virtual machines:
 vagrant up
