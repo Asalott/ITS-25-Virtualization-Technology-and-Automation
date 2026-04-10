@@ -12,7 +12,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "control" do |control|
     control.vm.hostname = "ansible-kontroll"
-    control.vm.network "privat_network", ip: CONTROL_IP
+    control.vm.network "private_network", ip: CONTROL_IP
     control.vm.provider "virtualbox" do |vb|
       vb.name = "vecka4-control"
       vb.memory = RAM
@@ -39,7 +39,7 @@ Vagrant.configure("2") do |config|
       vb.memory = RAM
       vb.cpus = CPUs
     end
-    web.vm.provison "shell", inline: <<-SHELL
+    web.vm.provision "shell", inline: <<-SHELL
       apt-get update -y
       apt-get install -y apache2
 
@@ -61,7 +61,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "database" do |db|
     db.vm.hostname = "database"
-    db.vm.network "private_network", ip: DATABASE_IP
+    db.vm.network "private_network", ip: DATABESE_IP
     db.vm.provider "virtualbox" do |vb|
       vb.name = "vecka4-databas"
       vb.memory = RAM
