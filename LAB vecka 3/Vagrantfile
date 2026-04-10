@@ -9,10 +9,14 @@ CPUs = 1
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/jammy64"
 
+# ── VM 1: Webbserver ──────────────────────────
   config.vm.define "webbserver" do |web|
     web.vm.hostname = "webserver"
 
+# Host-only-adapter — nåbar från Windows
     web.vm.network "private_network", ip: WEBSERVER_IP
+
+# Port forwarding — gör webbservern nåbar från Windows
     web.vm.network "forwarded_port", guest: 80, host: 8080
 
     web.vm.provider "virtualbox" do |vb|
@@ -29,9 +33,12 @@ Vagrant.configure("2") do |config|
       echo "=== Webbserver Klar ==="
     SHELL
   end
+
+# ── VM 2: Databasserver ───────────────────────
   config.vm.define "database" do |db|
     db.vm.hostname = "database"
 
+# Samma privata nätverk — men INGEN port forwarding
     db.vm.network "private_network", ip: DATABASE_IP
 
     db.vm.provider "virtualbox" do |vb|
