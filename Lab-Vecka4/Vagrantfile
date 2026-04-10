@@ -1,0 +1,97 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+CONTROL_IP = "192.168.56.10"
+WEBSERVER_IP = "192.168.56.11"
+DATABESE_IP = "192.168.56.12"
+RAM = 512
+CPUs = 1
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/jammy64"
+
+
+  config.vm.define "control" do |control|
+    control.vm.hostname = "ansible-kontroll"
+    control.vm.network "privat_network", ip: CONTROL_IP
+    control.vm.provider "virtualbox" do |vb|
+      vb.name = "vecka4-control"
+      vb.memory = RAM
+      vb.cpus = CPUs
+    end
+    control.vm.provision "shell", inline: <<-SHELL
+      apt-get update -y
+      apt-get install -y ansible
+
+      sudo -u vagrant ssh-keygen -t ed25519 \ -f /home/vagrant/.ssh/id_ed25519 \ -N "" -C "ansible-kontroll"
+
+      cp /home/vagrant/.ssh/id_ed25519.pub \ /vagrant/ansible_id_ed25519.pub
+
+      echo "=== Ansible-kontoll kalr ==="
+    SHELL
+  end
+
+  config.vm.define "webserver" do |web|
+    web.vm.hostname = "webserver"
+    web.vm.network "private_network", ip: WEBSERVER_IP
+    web.vm.network "forwarded_port", guest: 80, host: 8080
+    web.vm.provider "virtualbox" do |vb|
+      vb.name = "vecka4-webserver"
+      vb.memory = RAM
+      vb.cpus = CPUs
+    end
+    web.vm.provison "shell", inline: <<-SHELL
+      apt-get update -y
+      apt-get install -y apache2
+
+      while [ ! -f /vagrant/ansible_id_ed25519.pub ]; do
+        echo "Väntar på publik nyckel..."
+        sleep 3
+      done
+
+      mkdir -p /home/vagrant/.ssh
+      cat /vagrant/ansible_id_ed25519.pub
+        >> /home/vagrant/.ssh/authorized_keys
+      chmod 700 /home/vagrant/.ssh
+      chmod 600 /home/vagrant/.ssh/authorized_keys
+      chown -R vagrant:vagrant  /home/vagrant/.ssh
+
+      echo "=== Webbserver Klar ==="
+    SHELL
+  end
+
+  config.vm.define "database" do |db|
+    db.vm.hostname = "database"
+    db.vm.network "private_network", ip: DATABASE_IP
+    db.vm.provider "virtualbox" do |vb|
+      vb.name = "vecka4-databas"
+      vb.memory = RAM
+      vb.cpus = CPUs
+    end
+    db.vm.provision "shell", inline: <<-SHELL
+      apt-get update -y
+      apt-get install -y postgresql ufw
+
+      while [ ! -f /vagrant/ansbile_id_ed25519.pub ]; do
+        sleep 3
+      done
+
+      mkdir -P /home/vagrant/.ssh
+
+      cat /vagrant/ansible_id_ed25519.pub \ >> /home/vagrant/.ssh/authorized_keys
+
+    chmod 700 /home/vagrant/.ssh
+    chmod 600 /home/vagrant/.ssh/authorized_keys
+    chown -R vagrant:vagrant /home/vagrant/.ssh
+
+    ufw default deny incoming
+    ufw default allow outgoing
+    ufw allow ssh
+    ufw allow from 192.168.56.11 to any port 5432
+    ufw --force enable
+
+    echo "=== Databasserver Klar ==="
+
+  SHELL
+  end
+      
+end
