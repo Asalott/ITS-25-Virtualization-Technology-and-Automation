@@ -1,109 +1,116 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+
 CONTROL_IP = "192.168.56.10"
 WEBSERVER_IP = "192.168.56.11"
-DATABESE_IP = "192.168.56.12"
-RAM = 512
-CPUs = 1
+DATABASE_IP = "192.168.56.12"
+
+MEMORYCN = 512  #RAM kontrollnod
+MEMORY = 512    #General VM-memory
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/jammy64"
+config.vm.box = "ubuntu/jammy64"
 
 # ── VM 1: Ansible-kontrollnod ────────────────────────
-  config.vm.define "control" do |control|
-    control.vm.hostname = "ansible-kontroll"
-    control.vm.network "private_network", ip: CONTROL_IP
-    control.vm.provider "virtualbox" do |vb|
-      vb.name = "vecka4-control"
-      vb.memory = RAM
-      vb.cpus = CPUs
-    end
-    control.vm.provision "shell", inline: <<-SHELL
-      apt-get update -y
-      apt-get install -y ansible
+config.vm.define "control" do |control|
+control.vm.hostname = "ansible-kontroll"
+control.vm.network "private_network", ip: CONTROL_IP
+control.vm.provider "virtualbox" do |vb|
+vb.name = "vecka4-control"
+vb.memory = MEMORYCN
+vb.cpus = 1
+end
+control.vm.provision "shell", inline: <<-SHELL
+apt-get update -y
+apt-get install -y ansible
 
-      # Generera SSH-nyckelpar som vagrant-användaren.
-      # -N "" = inget lösenordsskydd på nyckeln.
-      # I produktion SKA nyckeln ha ett lösenord (passphrase).
-      # I labbmiljö skippar vi det för enkelhets skull.
-      sudo -u vagrant ssh-keygen -t ed25519 \ -f /home/vagrant/.ssh/id_ed25519 \ -N "" -C "ansible-kontroll"
+# Generera SSH-nyckelpar som vagrant-användaren.
+# -N "" = inget lösenordsskydd på nyckeln.
+# I produktion SKA nyckeln ha ett lösenord (passphrase).
+# I labbmiljö skippar vi det för enkelhets skull.
+sudo -u vagrant ssh-keygen -t ed25519 \
+-f /home/vagrant/.ssh/id_ed25519 \
+-N "" -C "ansible-kontroll"
 
-      # /vagrant/ är Vagrants delade mapp.
-      # Filer här syns av alla VMs och av Windows-hosten.
-      cp /home/vagrant/.ssh/id_ed25519.pub \ /vagrant/ansible_id_ed25519.pub
+# /vagrant/ är Vagrants delade mapp.
+# Filer här syns av alla VMs och av Windows-hosten.
+# Kommandot kopierar och klistrar in SSH-nyckeln till den delade mappen
+cp /home/vagrant/.ssh/id_ed25519.pub \
+/vagrant/ansible_id_ed25519.pub
 
-      echo "=== Ansible-kontoll kalr ==="
-    SHELL
-  end
+echo "=== Ansible-kontroll klar ==="
+SHELL
+end
 
-  # ── VM 2: Webbserver ─────────────────────────────────
-  config.vm.define "webserver" do |web|
-    web.vm.hostname = "webserver"
-    web.vm.network "private_network", ip: WEBSERVER_IP
-    web.vm.network "forwarded_port", guest: 80, host: 8080
-    web.vm.provider "virtualbox" do |vb|
-      vb.name = "vecka4-webserver"
-      vb.memory = RAM
-      vb.cpus = CPUs
-    end
-    web.vm.provision "shell", inline: <<-SHELL
-      apt-get update -y
-      apt-get install -y apache2
+# ── VM 2: Webbserver ─────────────────────────────────
+config.vm.define "webserver" do |web|
+web.vm.hostname = "webserver"
+web.vm.network "private_network", ip: WEBSERVER_IP
+web.vm.network "forwarded_port", guest: 80, host: 8080
+web.vm.provider "virtualbox" do |vb|
+vb.name = "vecka4-webserver"
+vb.memory = MEMORY
+vb.cpus = 1
+end
+web.vm.provision "shell", inline: <<-SHELL
+apt-get update -y
+apt-get install -y apache2
 
-      # Vänta tills kontrollnoden har skapat nyckeln.
-      # Vagrant kan starta VMs parallellt.
-      while [ ! -f /vagrant/ansible_id_ed25519.pub ]; do
-        echo "Väntar på publik nyckel..."
-        sleep 3
-      done
+# Vänta tills kontrollnoden har skapat nyckeln.
+# Vagrant kan starta VMs parallellt.
+while [ ! -f /vagrant/ansible_id_ed25519.pub ]; do
+echo "Väntar på publik nyckel..."
+sleep 3
+done
 
-      # Lägg till kontrollnodens publika nyckel i
-      # authorized_keys. Ansible kan nu SSH:a in.
-      mkdir -p /home/vagrant/.ssh
-      cat /vagrant/ansible_id_ed25519.pub
-        >> /home/vagrant/.ssh/authorized_keys
-      chmod 700 /home/vagrant/.ssh
-      chmod 600 /home/vagrant/.ssh/authorized_keys
-      chown -R vagrant:vagrant  /home/vagrant/.ssh
+# Lägg till kontrollnodens publika nyckel i
+# authorized_keys. Ansible kan nu SSH:a in.
+# cat + >> = läser av SSH-nyckel och stoppar in i "authorized_keys"
+#chmod 700/600 ändrar filrättigheter: 7(ägare (7 = rwx, 6 = rw-)) + 0(grupp) + 0(andra).
+mkdir -p /home/vagrant/.ssh
+cat /vagrant/ansible_id_ed25519.pub \
+>> /home/vagrant/.ssh/authorized_keys
+chmod 700 /home/vagrant/.ssh
+chmod 600 /home/vagrant/.ssh/authorized_keys
+chown -R vagrant:vagrant /home/vagrant/.ssh #chown berättar vem ägaren är.
 
-      echo "=== Webbserver Klar ==="
-    SHELL
-  end
+echo "=== Webbserver klar ==="
+SHELL
+end
 
-  # ── VM 3: Databasserver ──────────────────────────────
-  config.vm.define "database" do |db|
-    db.vm.hostname = "database"
-    db.vm.network "private_network", ip: DATABESE_IP
-    db.vm.provider "virtualbox" do |vb|
-      vb.name = "vecka4-databas"
-      vb.memory = RAM
-      vb.cpus = CPUs
-    end
-    db.vm.provision "shell", inline: <<-SHELL
-      apt-get update -y
-      apt-get install -y postgresql ufw
+# ── VM 3: Databasserver ──────────────────────────────
+config.vm.define "database" do |db|
+db.vm.hostname = "database"
+db.vm.network "private_network", ip: DATABASE_IP
+db.vm.provider "virtualbox" do |vb|
+vb.name = "vecka4-databas"
+vb.memory = MEMORY
+vb.cpus = 1
+end
 
-      while [ ! -f /vagrant/ansbile_id_ed25519.pub ]; do
-        sleep 3
-      done
+db.vm.provision "shell", inline: <<-SHELL
+apt-get update -y
+apt-get install -y postgresql ufw
 
-      mkdir -P /home/vagrant/.ssh
+while [ ! -f /vagrant/ansible_id_ed25519.pub ]; do
+sleep 3
+done
 
-      cat /vagrant/ansible_id_ed25519.pub \ >> /home/vagrant/.ssh/authorized_keys
+mkdir -p /home/vagrant/.ssh
+cat /vagrant/ansible_id_ed25519.pub \
+>> /home/vagrant/.ssh/authorized_keys
+chmod 700 /home/vagrant/.ssh
+chmod 600 /home/vagrant/.ssh/authorized_keys
+chown -R vagrant:vagrant /home/vagrant/.ssh
 
-    chmod 700 /home/vagrant/.ssh
-    chmod 600 /home/vagrant/.ssh/authorized_keys
-    chown -R vagrant:vagrant /home/vagrant/.ssh
+ufw default deny incoming
+ufw default allow outgoing
+ufw allow ssh
+ufw allow from 192.168.56.11 to any port 5432
+ufw --force enable #startar brandväggen. --force hoppar över bekräftelsefrågan.
 
-    ufw default deny incoming
-    ufw default allow outgoing
-    ufw allow ssh
-    ufw allow from 192.168.56.11 to any port 5432
-    ufw --force enable
+echo "=== Databasserver klar ==="
+SHELL
+end
 
-    echo "=== Databasserver Klar ==="
-
-  SHELL
-  end
-      
 end
