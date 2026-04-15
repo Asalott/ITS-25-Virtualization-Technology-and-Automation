@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ansible — The Complete Interactive Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #141720;
+    --surface2: #1a1e2a;
+    --border: #252a38;
+    --accent: #e8334a;
+    --accent2: #f77f00;
+    --accent3: #00c9a7;
+    --text: #e4e8f0;
+    --muted: #7a8299;
+    --code-bg: #0a0c10;
+    --highlight: #2a1f2d;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    padding: 80px 40px 60px;
+    text-align: center;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, #1e0a0f 0%, transparent 70%);
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      90deg, transparent, transparent 60px, rgba(232,51,74,0.03) 60px, rgba(232,51,74,0.03) 61px
+    ), repeating-linear-gradient(
+      0deg, transparent, transparent 60px, rgba(232,51,74,0.03) 60px, rgba(232,51,74,0.03) 61px
+    );
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(232,51,74,0.12);
+    border: 1px solid rgba(232,51,74,0.3);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 2px;
+    margin-bottom: 24px;
+  }
+  .hero h1 {
+    font-size: clamp(42px, 8vw, 96px);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -3px;
+    background: linear-gradient(135deg, #fff 30%, #e8334a 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 20px;
+  }
+  .hero p {
+    color: var(--muted);
+    font-size: 18px;
+    max-width: 560px;
+    margin: 0 auto 40px;
+    line-height: 1.6;
+  }
+
+  /* ── NAV PILLS ── */
+  .nav-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    padding: 24px 40px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(13,15,20,0.95);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+  .nav-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 7px 16px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all .2s;
+    text-decoration: none;
+    letter-spacing: 0.5px;
+  }
+  .nav-pill:hover, .nav-pill.active {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: rgba(232,51,74,0.08);
+  }
+
+  /* ── LAYOUT ── */
+  .main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 60px 24px;
+  }
+
+  /* ── SECTION ── */
+  .section {
+    margin-bottom: 80px;
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  .section.visible { opacity: 1; transform: translateY(0); }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+
+  h2 {
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    margin-bottom: 20px;
+    line-height: 1.1;
+  }
+  h3 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+  p { color: var(--muted); line-height: 1.75; margin-bottom: 16px; font-size: 15px; }
+  strong { color: var(--text); }
+
+  /* ── CARDS ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 24px;
+    transition: border-color .2s, transform .2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--card-accent, var(--accent));
+  }
+  .card:hover { border-color: var(--card-accent, var(--accent)); transform: translateY(-2px); }
+  .card-icon { font-size: 28px; margin-bottom: 12px; }
+  .card h3 { font-size: 16px; margin-bottom: 8px; }
+  .card p { font-size: 13px; margin: 0; }
+
+  /* ── CODE BLOCKS ── */
+  .code-wrapper {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 20px 0;
+  }
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .code-filename {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--accent3);
+  }
+  .copy-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    background: none;
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .copy-btn:hover { color: var(--accent3); border-color: var(--accent3); }
+  .copy-btn.copied { color: var(--accent3); border-color: var(--accent3); }
+  pre {
+    padding: 20px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #c9d1e0;
+  }
+  .c-key { color: #e06c75; }
+  .c-str { color: #98c379; }
+  .c-cmt { color: #5c6370; font-style: italic; }
+  .c-num { color: #d19a66; }
+  .c-kw { color: #c678dd; }
+  .c-op { color: #56b6c2; }
+  .c-var { color: #e5c07b; }
+
+  /* ── FILE TREE ── */
+  .file-tree {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 2;
+    margin: 20px 0;
+  }
+  .ft-dir { color: #61afef; }
+  .ft-file { color: #abb2bf; }
+  .ft-yml { color: #98c379; }
+  .ft-ini { color: #d19a66; }
+  .ft-comment { color: #5c6370; }
+  .ft-indent { color: #3e4452; }
+
+  /* ── VARIABLES TABLE ── */
+  .var-filter {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .var-filter-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .var-filter-btn.active { background: rgba(232,51,74,0.1); border-color: var(--accent); color: var(--accent); }
+  .var-search {
+    flex: 1;
+    min-width: 200px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text);
+    padding: 7px 14px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .var-search:focus { border-color: var(--accent); }
+  .var-search::placeholder { color: var(--muted); }
+
+  .var-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .var-table th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .var-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(37,42,56,0.5);
+    vertical-align: top;
+  }
+  .var-table tr:hover td { background: var(--surface2); }
+  .var-name {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent3);
+    white-space: nowrap;
+  }
+  .var-type {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+  .type-magic { background: rgba(232,51,74,0.12); color: var(--accent); border: 1px solid rgba(232,51,74,0.2); }
+  .type-connection { background: rgba(0,201,167,0.1); color: var(--accent3); border: 1px solid rgba(0,201,167,0.2); }
+  .type-playbook { background: rgba(247,127,0,0.1); color: var(--accent2); border: 1px solid rgba(247,127,0,0.2); }
+  .type-fact { background: rgba(97,175,239,0.1); color: #61afef; border: 1px solid rgba(97,175,239,0.2); }
+  .type-env { background: rgba(198,120,221,0.1); color: #c678dd; border: 1px solid rgba(198,120,221,0.2); }
+  .var-desc { color: var(--muted); line-height: 1.5; }
+  .var-example { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #98c379; margin-top: 4px; }
+
+  .hidden-row { display: none; }
+
+  /* ── TABS ── */
+  .tabs { margin: 24px 0; }
+  .tab-list {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0;
+  }
+  .tab-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .2s;
+    margin-bottom: -1px;
+  }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── STEPS ── */
+  .steps { margin: 24px 0; }
+  .step {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 32px;
+    position: relative;
+  }
+  .step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 42px;
+    bottom: -16px;
+    width: 1px;
+    background: linear-gradient(var(--border), transparent);
+  }
+  .step-num {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step-content { flex: 1; padding-top: 8px; }
+  .step-content h3 { font-size: 17px; margin-bottom: 8px; }
+
+  /* ── INFO BOX ── */
+  .info-box {
+    background: var(--surface);
+    border-left: 3px solid var(--accent3);
+    border-radius: 0 6px 6px 0;
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .info-box.warn { border-left-color: var(--accent2); }
+  .info-box.danger { border-left-color: var(--accent); }
+  .info-box strong { color: var(--text); display: block; margin-bottom: 6px; }
+
+  /* ── ACCORDION ── */
+  .accordion { margin: 16px 0; }
+  .acc-item {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  .acc-header {
+    width: 100%;
+    background: var(--surface);
+    border: none;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 16px 20px;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background .2s;
+  }
+  .acc-header:hover { background: var(--surface2); }
+  .acc-arrow { transition: transform .3s; font-size: 12px; color: var(--muted); }
+  .acc-item.open .acc-arrow { transform: rotate(180deg); }
+  .acc-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .35s ease;
+  }
+  .acc-item.open .acc-body { max-height: 2000px; }
+  .acc-body-inner { padding: 0 20px 20px; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    width: 0%;
+    z-index: 200;
+    transition: width .1s;
+  }
+
+  /* ── BACK TO TOP ── */
+  .back-top {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    width: 44px;
+    height: 44px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    text-decoration: none;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all .3s;
+  }
+  .back-top.show { opacity: 1; transform: translateY(0); }
+  .back-top:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 40px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+
+  @media (max-width: 600px) {
+    .hero { padding: 60px 20px 40px; }
+    .nav-pills { padding: 16px 20px; }
+    .main { padding: 40px 16px; }
+    h2 { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progress"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">Interactive Guide</div>
+  <h1>Ansible</h1>
+  <p>Infrastructure as Code — automate provisioning, configuration management, and application deployment without agents.</p>
+</div>
+
+<!-- NAV -->
+<nav class="nav-pills" id="nav">
+  <a href="#what" class="nav-pill active">What is Ansible?</a>
+  <a href="#install" class="nav-pill">Installation</a>
+  <a href="#structure" class="nav-pill">File Structure</a>
+  <a href="#inventory" class="nav-pill">Inventory</a>
+  <a href="#playbooks" class="nav-pill">Playbooks</a>
+  <a href="#roles" class="nav-pill">Roles</a>
+  <a href="#variables" class="nav-pill">Variables</a>
+  <a href="#modules" class="nav-pill">Modules</a>
+</nav>
+
+<main class="main">
+
+  <!-- ── WHAT IS ANSIBLE ── -->
+  <section class="section" id="what">
+    <div class="section-label">01 — Overview</div>
+    <h2>What is Ansible?</h2>
+    <p>Ansible is an open-source <strong>IT automation engine</strong> built by Red Hat. It lets you define your infrastructure in simple YAML files — no special agents needed on target machines, just SSH (or WinRM for Windows).</p>
+
+    <div class="card-grid">
+      <div class="card" style="--card-accent:#e8334a">
+        <div class="card-icon">⚡</div>
+        <h3>Agentless</h3>
+        <p>Uses SSH to connect. No daemon or agent software to install on managed nodes.</p>
+      </div>
+      <div class="card" style="--card-accent:#f77f00">
+        <div class="card-icon">📄</div>
+        <h3>Declarative YAML</h3>
+        <p>Playbooks describe the <em>desired state</em> in human-readable YAML syntax.</p>
+      </div>
+      <div class="card" style="--card-accent:#00c9a7">
+        <div class="card-icon">🔁</div>
+        <h3>Idempotent</h3>
+        <p>Running the same playbook multiple times produces the same result — safe to re-run.</p>
+      </div>
+      <div class="card" style="--card-accent:#61afef">
+        <div class="card-icon">🧩</div>
+        <h3>Huge Module Library</h3>
+        <p>5,000+ built-in modules for cloud, networking, databases, containers, and more.</p>
+      </div>
+    </div>
+
+    <h3>How it works</h3>
+    <p>The <strong>Control Node</strong> (your machine or a CI server) runs Ansible. It reads your inventory (list of servers), compiles tasks from playbooks, and pushes them over SSH to <strong>Managed Nodes</strong>. No software needs to be pre-installed — just Python on the remote host.</p>
+
+    <div class="code-wrapper">
+      <div class="code-header">
+        <span class="code-filename">Architecture</span>
+      </div>
+      <pre>
+  ┌─────────────────┐       SSH / WinRM        ┌──────────────┐
+  │  Control Node   │ ────────────────────────▶ │ Managed Node │
+  │  (your laptop / │                           │  web-01      │
+  │   CI server)    │ ────────────────────────▶ │ Managed Node │
+  │                 │                           │  db-01       │
+  │  ansible        │ ────────────────────────▶ │ Managed Node │
+  │  playbooks      │                           │  cache-01    │
+  └─────────────────┘                           └──────────────┘
+         │
+  reads: inventory.ini / hosts.yml
+         playbooks/*.yml
+         roles/
+         group_vars / host_vars</pre>
+    </div>
+  </section>
+
+  <!-- ── INSTALLATION ── -->
+  <section class="section" id="install">
+    <div class="section-label">02 — Getting Started</div>
+    <h2>Installation & Setup</h2>
+
+    <div class="tabs">
+      <div class="tab-list">
+        <button class="tab-btn active" onclick="switchTab(this,'t-linux')">Linux / macOS</button>
+        <button class="tab-btn" onclick="switchTab(this,'t-win')">Windows (WSL)</button>
+        <button class="tab-btn" onclick="switchTab(this,'t-pip')">pip (universal)</button>
+      </div>
+
+      <div class="tab-panel active" id="t-linux">
+        <div class="code-wrapper">
+          <div class="code-header">
+            <span class="code-filename">Ubuntu / Debian</span>
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          </div>
+          <pre><span class="c-cmt"># Add official PPA</span>
+sudo apt update
+sudo apt install -y software-properties-common
+sudo add-apt-repository --yes --update ppa:ansible/ansible
+sudo apt install -y ansible
+
+<span class="c-cmt"># Verify</span>
+ansible --version</pre>
+        </div>
+        <div class="code-wrapper">
+          <div class="code-header">
+            <span class="code-filename">macOS (Homebrew)</span>
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          </div>
+          <pre>brew install ansible
+ansible --version</pre>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="t-win">
+        <div class="info-box warn">
+          <strong>⚠️ Windows Control Node</strong>
+          Ansible doesn't run natively on Windows as a control node. Use WSL2 (Ubuntu) and follow the Linux instructions inside it.
+        </div>
+        <div class="code-wrapper">
+          <div class="code-header">
+            <span class="code-filename">PowerShell (enable WSL2)</span>
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          </div>
+          <pre>wsl --install -d Ubuntu
+<span class="c-cmt"># Then open Ubuntu terminal and follow Linux steps</span></pre>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="t-pip">
+        <div class="code-wrapper">
+          <div class="code-header">
+            <span class="code-filename">pip (any OS with Python 3.9+)</span>
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          </div>
+          <pre>python3 -m pip install --user ansible
+<span class="c-cmt"># Or inside a virtualenv (recommended)</span>
+python3 -m venv .venv
+source .venv/bin/activate
+pip install ansible
+ansible --version</pre>
+        </div>
+      </div>
+    </div>
+
+    <h3>First ping test</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h3>Create a minimal inventory</h3>
+          <div class="code-wrapper">
+            <div class="code-header"><span class="code-filename">hosts.ini</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+            <pre>[webservers]
+192.168.1.10  <span class="c-cmt">ansible_user=ubuntu</span>
+192.168.1.11  <span class="c-cmt">ansible_user=ubuntu</span></pre>
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h3>Run an ad-hoc ping</h3>
+          <div class="code-wrapper">
+            <div class="code-header"><span class="code-filename">terminal</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+            <pre>ansible webservers -i hosts.ini -m ping</pre>
+          </div>
+          <p>You should see <code style="color:var(--accent3)">pong</code> returned from each host.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h3>Run your first playbook</h3>
+          <div class="code-wrapper">
+            <div class="code-header"><span class="code-filename">terminal</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+            <pre>ansible-playbook -i hosts.ini site.yml</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FILE STRUCTURE ── -->
+  <section class="section" id="structure">
+    <div class="section-label">03 — Project Layout</div>
+    <h2>File Structure</h2>
+    <p>Ansible doesn't enforce a strict layout, but following the <strong>official best-practice structure</strong> keeps large projects manageable.</p>
+
+    <div class="file-tree">
+<span class="ft-dir">my-ansible-project/</span>
+├── <span class="ft-yml">ansible.cfg</span>            <span class="ft-comment"># project-level config (overrides /etc/ansible/ansible.cfg)</span>
+├── <span class="ft-ini">hosts.ini</span>              <span class="ft-comment"># OR inventory/ directory</span>
+│
+├── <span class="ft-yml">site.yml</span>               <span class="ft-comment"># master playbook — imports everything</span>
+├── <span class="ft-yml">webservers.yml</span>          <span class="ft-comment"># playbook for web tier</span>
+├── <span class="ft-yml">databases.yml</span>           <span class="ft-comment"># playbook for db tier</span>
+│
+├── <span class="ft-dir">inventory/</span>
+│   ├── <span class="ft-ini">production</span>           <span class="ft-comment"># production hosts</span>
+│   ├── <span class="ft-ini">staging</span>              <span class="ft-comment"># staging hosts</span>
+│   └── <span class="ft-dir">group_vars/</span>
+│       ├── <span class="ft-yml">all.yml</span>          <span class="ft-comment"># vars for ALL hosts</span>
+│       ├── <span class="ft-yml">webservers.yml</span>   <span class="ft-comment"># vars for webservers group</span>
+│       └── <span class="ft-yml">databases.yml</span>
+│
+├── <span class="ft-dir">group_vars/</span>             <span class="ft-comment"># global group variables</span>
+│   └── <span class="ft-yml">all.yml</span>
+│
+├── <span class="ft-dir">host_vars/</span>              <span class="ft-comment"># per-host variables</span>
+│   └── <span class="ft-yml">web-01.yml</span>
+│
+├── <span class="ft-dir">roles/</span>
+│   ├── <span class="ft-dir">common/</span>              <span class="ft-comment"># applied to all hosts</span>
+│   │   ├── <span class="ft-dir">tasks/</span>
+│   │   │   └── <span class="ft-yml">main.yml</span>
+│   │   ├── <span class="ft-dir">handlers/</span>
+│   │   │   └── <span class="ft-yml">main.yml</span>
+│   │   ├── <span class="ft-dir">templates/</span>
+│   │   │   └── ntp.conf.j2
+│   │   ├── <span class="ft-dir">files/</span>
+│   │   ├── <span class="ft-dir">vars/</span>
+│   │   │   └── <span class="ft-yml">main.yml</span>
+│   │   ├── <span class="ft-dir">defaults/</span>
+│   │   │   └── <span class="ft-yml">main.yml</span>   <span class="ft-comment"># lowest-priority defaults</span>
+│   │   └── <span class="ft-dir">meta/</span>
+│   │       └── <span class="ft-yml">main.yml</span>   <span class="ft-comment"># role dependencies</span>
+│   └── <span class="ft-dir">nginx/</span>               <span class="ft-comment"># another role</span>
+│
+└── <span class="ft-dir">library/</span>               <span class="ft-comment"># custom modules</span>
+    </div>
+
+    <div class="accordion">
+      <div class="acc-item">
+        <button class="acc-header" onclick="toggleAcc(this)">
+          ansible.cfg — what goes in it?
+          <span class="acc-arrow">▼</span>
+        </button>
+        <div class="acc-body"><div class="acc-body-inner">
+          <div class="code-wrapper">
+            <div class="code-header"><span class="code-filename">ansible.cfg</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+            <pre>[defaults]
+<span class="c-key">inventory</span>          = <span class="c-str">./inventory/production</span>
+<span class="c-key">remote_user</span>        = <span class="c-str">ubuntu</span>
+<span class="c-key">private_key_file</span>   = <span class="c-str">~/.ssh/id_rsa</span>
+<span class="c-key">host_key_checking</span>  = <span class="c-str">False</span>
+<span class="c-key">roles_path</span>         = <span class="c-str">./roles</span>
+<span class="c-key">retry_files_enabled</span>= <span class="c-str">False</span>
+<span class="c-key">stdout_callback</span>    = <span class="c-str">yaml</span>
+
+[privilege_escalation]
+<span class="c-key">become</span>        = <span class="c-str">True</span>
+<span class="c-key">become_method</span> = <span class="c-str">sudo</span>
+<span class="c-key">become_user</span>   = <span class="c-str">root</span>
+
+[ssh_connection]
+<span class="c-key">pipelining</span>    = <span class="c-str">True</span>
+<span class="c-key">ssh_args</span>      = <span class="c-str">-o ControlMaster=auto -o ControlPersist=60s</span></pre>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-header" onclick="toggleAcc(this)">
+          What does site.yml look like?
+          <span class="acc-arrow">▼</span>
+        </button>
+        <div class="acc-body"><div class="acc-body-inner">
+          <div class="code-wrapper">
+            <div class="code-header"><span class="code-filename">site.yml</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+            <pre><span class="c-cmt">---</span>
+<span class="c-cmt"># Master playbook — delegates to sub-playbooks</span>
+
+- <span class="c-key">import_playbook</span><span class="c-op">:</span> <span class="c-str">webservers.yml</span>
+- <span class="c-key">import_playbook</span><span class="c-op">:</span> <span class="c-str">databases.yml</span></pre>
+          </div>
+        </div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── INVENTORY ── -->
+  <section class="section" id="inventory">
+    <div class="section-label">04 — Inventory</div>
+    <h2>Inventory Files</h2>
+    <p>The inventory is a list of your managed hosts, organized into <strong>groups</strong>. It can be a static file (INI or YAML) or a dynamic script/plugin that queries a cloud provider.</p>
+
+    <div class="tabs">
+      <div class="tab-list">
+        <button class="tab-btn active" onclick="switchTab(this,'inv-ini')">INI Format</button>
+        <button class="tab-btn" onclick="switchTab(this,'inv-yml')">YAML Format</button>
+        <button class="tab-btn" onclick="switchTab(this,'inv-dyn')">Dynamic</button>
+      </div>
+
+      <div class="tab-panel active" id="inv-ini">
+        <div class="code-wrapper">
+          <div class="code-header"><span class="code-filename">inventory/production</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="c-cmt"># Ungrouped hosts</span>
+mail.example.com
+
+<span class="c-cmt"># Group: webservers</span>
+[webservers]
+web-01.example.com
+web-02.example.com  <span class="c-key">ansible_port</span>=<span class="c-num">2222</span>
+
+<span class="c-cmt"># Group: databases</span>
+[databases]
+db-01.example.com
+db-02.example.com
+
+<span class="c-cmt"># Group of groups</span>
+[production:children]
+webservers
+databases
+
+<span class="c-cmt"># Variables for a group</span>
+[webservers:vars]
+<span class="c-key">http_port</span>=<span class="c-num">80</span>
+<span class="c-key">max_connections</span>=<span class="c-num">100</span></pre>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="inv-yml">
+        <div class="code-wrapper">
+          <div class="code-header"><span class="code-filename">inventory/hosts.yml</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="c-cmt">---</span>
+<span class="c-key">all</span><span class="c-op">:</span>
+  <span class="c-key">children</span><span class="c-op">:</span>
+    <span class="c-key">webservers</span><span class="c-op">:</span>
+      <span class="c-key">hosts</span><span class="c-op">:</span>
+        <span class="c-key">web-01</span><span class="c-op">:</span>
+          <span class="c-key">ansible_host</span><span class="c-op">:</span> <span class="c-str">192.168.1.10</span>
+          <span class="c-key">ansible_user</span><span class="c-op">:</span> <span class="c-str">ubuntu</span>
+        <span class="c-key">web-02</span><span class="c-op">:</span>
+          <span class="c-key">ansible_host</span><span class="c-op">:</span> <span class="c-str">192.168.1.11</span>
+      <span class="c-key">vars</span><span class="c-op">:</span>
+        <span class="c-key">http_port</span><span class="c-op">:</span> <span class="c-num">80</span>
+    <span class="c-key">databases</span><span class="c-op">:</span>
+      <span class="c-key">hosts</span><span class="c-op">:</span>
+        <span class="c-key">db-01</span><span class="c-op">:</span>
+          <span class="c-key">ansible_host</span><span class="c-op">:</span> <span class="c-str">192.168.1.20</span></pre>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="inv-dyn">
+        <p>Dynamic inventory plugins query live sources — AWS, GCP, Azure, vSphere, etc.</p>
+        <div class="code-wrapper">
+          <div class="code-header"><span class="code-filename">inventory/aws_ec2.yml</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="c-cmt">---</span>
+<span class="c-key">plugin</span><span class="c-op">:</span> <span class="c-str">amazon.aws.aws_ec2</span>
+<span class="c-key">regions</span><span class="c-op">:</span>
+  - <span class="c-str">eu-west-1</span>
+<span class="c-key">filters</span><span class="c-op">:</span>
+  <span class="c-key">instance-state-name</span><span class="c-op">:</span> <span class="c-str">running</span>
+  <span class="c-key">tag:Environment</span><span class="c-op">:</span> <span class="c-str">production</span>
+<span class="c-key">keyed_groups</span><span class="c-op">:</span>
+  - <span class="c-key">key</span><span class="c-op">:</span> <span class="c-str">tags.Role</span>
+    <span class="c-key">prefix</span><span class="c-op">:</span> <span class="c-str">role</span></pre>
+        </div>
+        <div class="code-wrapper">
+          <div class="code-header"><span class="code-filename">terminal</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+          <pre><span class="c-cmt"># Install the collection first</span>
+ansible-galaxy collection install amazon.aws
+<span class="c-cmt"># List discovered hosts</span>
+ansible-inventory -i inventory/aws_ec2.yml --list</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PLAYBOOKS ── -->
+  <section class="section" id="playbooks">
+    <div class="section-label">05 — Playbooks</div>
+    <h2>Writing Playbooks</h2>
+    <p>A <strong>playbook</strong> is a YAML file containing one or more <em>plays</em>. Each play maps a group of hosts to a set of tasks.</p>
+
+    <div class="code-wrapper">
+      <div class="code-header"><span class="code-filename">webservers.yml</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="c-cmt">---</span>
+- <span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">Configure web servers</span>
+  <span class="c-key">hosts</span><span class="c-op">:</span> <span class="c-str">webservers</span>
+  <span class="c-key">become</span><span class="c-op">:</span> <span class="c-kw">true</span>          <span class="c-cmt"># run as sudo</span>
+
+  <span class="c-key">vars</span><span class="c-op">:</span>
+    <span class="c-key">app_port</span><span class="c-op">:</span> <span class="c-num">8080</span>
+    <span class="c-key">app_name</span><span class="c-op">:</span> <span class="c-str">myapp</span>
+
+  <span class="c-key">pre_tasks</span><span class="c-op">:</span>
+    - <span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">Update apt cache</span>
+      <span class="c-key">ansible.builtin.apt</span><span class="c-op">:</span>
+        <span class="c-key">update_cache</span><span class="c-op">:</span> <span class="c-kw">true</span>
+        <span class="c-key">cache_valid_time</span><span class="c-op">:</span> <span class="c-num">3600</span>
+
+  <span class="c-key">tasks</span><span class="c-op">:</span>
+    - <span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">Install nginx</span>
+      <span class="c-key">ansible.builtin.package</span><span class="c-op">:</span>
+        <span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">nginx</span>
+        <span class="c-key">state</span><span class="c-op">:</span> <span class="c-str">present</span>
+
+    - <span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">Deploy config from template</span>
+      <span class="c-key">ansible.builtin.template</span><span class="c-op">:</span>
+        <span class="c-key">src</span><span class="c-op">:</span> <span class="c-str">nginx.conf.j2</span>
+        <span class="c-key">dest</span><span class="c-op">:</span> <span class="c-str">/etc/nginx/nginx.conf</span>
+        <span class="c-key">mode</span><span class="c-op">:</span> <span class="c-str">'0644'</span>
+      <span class="c-key">notify</span><span class="c-op">:</span> <span class="c-str">Reload nginx</span>   <span class="c-cmt"># triggers handler</span>
+
+    - <span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">Ensure nginx is running</span>
+      <span class="c-key">ansible.builtin.service</span><span class="c-op">:</span>
+        <span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">nginx</span>
+        <span class="c-key">state</span><span class="c-op">:</span> <span class="c-str">started</span>
+        <span class="c-key">enabled</span><span class="c-op">:</span> <span class="c-kw">true</span>
+
+  <span class="c-key">handlers</span><span class="c-op">:</span>
+    - <span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">Reload nginx</span>
+      <span class="c-key">ansible.builtin.service</span><span class="c-op">:</span>
+        <span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">nginx</span>
+        <span class="c-key">state</span><span class="c-op">:</span> <span class="c-str">reloaded</span></pre>
+    </div>
+
+    <div class="card-grid">
+      <div class="card" style="--card-accent:#61afef">
+        <h3>pre_tasks / post_tasks</h3>
+        <p>Run before or after the main <code>tasks</code> block, regardless of roles.</p>
+      </div>
+      <div class="card" style="--card-accent:#c678dd">
+        <h3>handlers</h3>
+        <p>Tasks that run only when <em>notified</em> by another task, and only once at the end of the play.</p>
+      </div>
+      <div class="card" style="--card-accent:#e5c07b">
+        <h3>notify</h3>
+        <p>A task triggers a handler by name. The handler runs at the end if the task reports <em>changed</em>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ROLES ── -->
+  <section class="section" id="roles">
+    <div class="section-label">06 — Roles</div>
+    <h2>Roles</h2>
+    <p>Roles are a way to <strong>package and reuse</strong> automation. Each role is a directory with a fixed layout. Tasks, handlers, variables, templates, and files live in known subdirectories — Ansible loads them automatically.</p>
+
+    <div class="code-wrapper">
+      <div class="code-header"><span class="code-filename">roles/nginx/tasks/main.yml</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="c-cmt">---</span>
+- <span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">Install nginx</span>
+  <span class="c-key">ansible.builtin.package</span><span class="c-op">:</span>
+    <span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">nginx</span>
+    <span class="c-key">state</span><span class="c-op">:</span> <span class="c-str">present</span>
+
+- <span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">Deploy vhost config</span>
+  <span class="c-key">ansible.builtin.template</span><span class="c-op">:</span>
+    <span class="c-key">src</span><span class="c-op">:</span> <span class="c-str">vhost.conf.j2</span>
+    <span class="c-key">dest</span><span class="c-op">:</span> <span class="c-str">/etc/nginx/sites-enabled/{{ vhost_name }}.conf</span>
+  <span class="c-key">notify</span><span class="c-op">:</span> <span class="c-str">Reload nginx</span></pre>
+    </div>
+
+    <div class="code-wrapper">
+      <div class="code-header"><span class="code-filename">roles/nginx/defaults/main.yml</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="c-cmt">---</span>
+<span class="c-key">nginx_port</span><span class="c-op">:</span> <span class="c-num">80</span>
+<span class="c-key">vhost_name</span><span class="c-op">:</span> <span class="c-str">default</span>
+<span class="c-key">nginx_worker_processes</span><span class="c-op">:</span> <span class="c-str">auto</span></pre>
+    </div>
+
+    <h3>Using a role in a playbook</h3>
+    <div class="code-wrapper">
+      <div class="code-header"><span class="code-filename">webservers.yml</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="c-cmt">---</span>
+- <span class="c-key">hosts</span><span class="c-op">:</span> <span class="c-str">webservers</span>
+  <span class="c-key">roles</span><span class="c-op">:</span>
+    - <span class="c-str">common</span>
+    - <span class="c-key">role</span><span class="c-op">:</span> <span class="c-str">nginx</span>
+      <span class="c-key">vars</span><span class="c-op">:</span>
+        <span class="c-key">nginx_port</span><span class="c-op">:</span> <span class="c-num">443</span>
+        <span class="c-key">vhost_name</span><span class="c-op">:</span> <span class="c-str">myapp</span></pre>
+    </div>
+
+    <h3>Installing roles from Ansible Galaxy</h3>
+    <div class="code-wrapper">
+      <div class="code-header"><span class="code-filename">requirements.yml</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+      <pre><span class="c-cmt">---</span>
+<span class="c-key">roles</span><span class="c-op">:</span>
+  - <span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">geerlingguy.docker</span>
+  - <span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">geerlingguy.nginx</span>
+
+<span class="c-key">collections</span><span class="c-op">:</span>
+  - <span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">amazon.aws</span>
+    <span class="c-key">version</span><span class="c-op">:</span> <span class="c-str">">=6.0.0"</span></pre>
+    </div>
+    <div class="code-wrapper">
+      <div class="code-header"><span class="code-filename">terminal</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+      <pre>ansible-galaxy install -r requirements.yml</pre>
+    </div>
+  </section>
+
+  <!-- ── VARIABLES ── -->
+  <section class="section" id="variables">
+    <div class="section-label">07 — Variables</div>
+    <h2>All Ansible Variables</h2>
+    <p>Variables follow a strict <strong>precedence order</strong> (higher number = higher priority). Use the filters below to explore them all.</p>
+
+    <div class="info-box">
+      <strong>📋 Precedence (low → high)</strong>
+      role defaults → inventory group_vars → inventory host_vars → playbook group_vars → playbook host_vars → host facts → play vars → task vars → extra vars (-e)
+    </div>
+
+    <div class="var-filter">
+      <input class="var-search" id="varSearch" placeholder="Search variables..." oninput="filterVars()">
+      <button class="var-filter-btn active" onclick="filterType(this,'all')">All</button>
+      <button class="var-filter-btn" onclick="filterType(this,'connection')">Connection</button>
+      <button class="var-filter-btn" onclick="filterType(this,'magic')">Magic</button>
+      <button class="var-filter-btn" onclick="filterType(this,'playbook')">Playbook</button>
+      <button class="var-filter-btn" onclick="filterType(this,'fact')">Facts</button>
+      <button class="var-filter-btn" onclick="filterType(this,'env')">Environment</button>
+    </div>
+
+    <div style="overflow-x:auto">
+    <table class="var-table" id="varTable">
+      <thead>
+        <tr>
+          <th>Variable</th>
+          <th>Type</th>
+          <th>Description & Example</th>
+        </tr>
+      </thead>
+      <tbody id="varBody">
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- ── MODULES ── -->
+  <section class="section" id="modules">
+    <div class="section-label">08 — Modules</div>
+    <h2>Essential Modules</h2>
+    <p>Modules are the units of work Ansible executes. Always prefer the FQCN (Fully Qualified Collection Name) format like <code style="color:var(--accent3)">ansible.builtin.copy</code>.</p>
+
+    <div class="accordion">
+
+      <div class="acc-item open">
+        <button class="acc-header" onclick="toggleAcc(this)">
+          📦 Package Management
+          <span class="acc-arrow">▼</span>
+        </button>
+        <div class="acc-body" style="max-height:2000px"><div class="acc-body-inner">
+          <div class="code-wrapper">
+            <div class="code-header"><span class="code-filename">apt / yum / package</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+            <pre><span class="c-cmt"># Generic (auto-detects OS)</span>
+- <span class="c-key">ansible.builtin.package</span><span class="c-op">:</span>
+    <span class="c-key">name</span><span class="c-op">:</span> [<span class="c-str">git</span>, <span class="c-str">curl</span>, <span class="c-str">vim</span>]
+    <span class="c-key">state</span><span class="c-op">:</span> <span class="c-str">present</span>  <span class="c-cmt"># present | absent | latest</span>
+
+<span class="c-cmt"># Debian/Ubuntu specific</span>
+- <span class="c-key">ansible.builtin.apt</span><span class="c-op">:</span>
+    <span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">nginx</span>
+    <span class="c-key">state</span><span class="c-op">:</span> <span class="c-str">latest</span>
+    <span class="c-key">update_cache</span><span class="c-op">:</span> <span class="c-kw">true</span></pre>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-header" onclick="toggleAcc(this)">
+          🗂️ File & Template Management
+          <span class="acc-arrow">▼</span>
+        </button>
+        <div class="acc-body"><div class="acc-body-inner">
+          <div class="code-wrapper">
+            <div class="code-header"><span class="code-filename">file / copy / template / lineinfile</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+            <pre><span class="c-cmt"># Create directory</span>
+- <span class="c-key">ansible.builtin.file</span><span class="c-op">:</span>
+    <span class="c-key">path</span><span class="c-op">:</span> <span class="c-str">/opt/myapp</span>
+    <span class="c-key">state</span><span class="c-op">:</span> <span class="c-str">directory</span>
+    <span class="c-key">owner</span><span class="c-op">:</span> <span class="c-str">www-data</span>
+    <span class="c-key">mode</span><span class="c-op">:</span> <span class="c-str">'0755'</span>
+
+<span class="c-cmt"># Copy static file</span>
+- <span class="c-key">ansible.builtin.copy</span><span class="c-op">:</span>
+    <span class="c-key">src</span><span class="c-op">:</span> <span class="c-str">files/app.conf</span>
+    <span class="c-key">dest</span><span class="c-op">:</span> <span class="c-str">/etc/app/app.conf</span>
+
+<span class="c-cmt"># Render Jinja2 template</span>
+- <span class="c-key">ansible.builtin.template</span><span class="c-op">:</span>
+    <span class="c-key">src</span><span class="c-op">:</span> <span class="c-str">nginx.conf.j2</span>
+    <span class="c-key">dest</span><span class="c-op">:</span> <span class="c-str">/etc/nginx/nginx.conf</span>
+
+<span class="c-cmt"># Ensure a line exists in a file</span>
+- <span class="c-key">ansible.builtin.lineinfile</span><span class="c-op">:</span>
+    <span class="c-key">path</span><span class="c-op">:</span> <span class="c-str">/etc/ssh/sshd_config</span>
+    <span class="c-key">regexp</span><span class="c-op">:</span> <span class="c-str">'^PermitRootLogin'</span>
+    <span class="c-key">line</span><span class="c-op">:</span> <span class="c-str">'PermitRootLogin no'</span></pre>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-header" onclick="toggleAcc(this)">
+          🔧 Service Management
+          <span class="acc-arrow">▼</span>
+        </button>
+        <div class="acc-body"><div class="acc-body-inner">
+          <div class="code-wrapper">
+            <div class="code-header"><span class="code-filename">service / systemd</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+            <pre>- <span class="c-key">ansible.builtin.systemd</span><span class="c-op">:</span>
+    <span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">nginx</span>
+    <span class="c-key">state</span><span class="c-op">:</span> <span class="c-str">started</span>   <span class="c-cmt"># started|stopped|restarted|reloaded</span>
+    <span class="c-key">enabled</span><span class="c-op">:</span> <span class="c-kw">true</span>
+    <span class="c-key">daemon_reload</span><span class="c-op">:</span> <span class="c-kw">true</span></pre>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-header" onclick="toggleAcc(this)">
+          🖥️ Command Execution
+          <span class="acc-arrow">▼</span>
+        </button>
+        <div class="acc-body"><div class="acc-body-inner">
+          <div class="code-wrapper">
+            <div class="code-header"><span class="code-filename">command / shell / raw</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+            <pre><span class="c-cmt"># command — no shell, safer, no pipes</span>
+- <span class="c-key">ansible.builtin.command</span><span class="c-op">:</span>
+    <span class="c-key">cmd</span><span class="c-op">:</span> <span class="c-str">systemctl restart nginx</span>
+    <span class="c-key">creates</span><span class="c-op">:</span> <span class="c-str">/etc/nginx/nginx.conf</span>  <span class="c-cmt"># skip if file exists</span>
+
+<span class="c-cmt"># shell — full shell, pipes/redirects work</span>
+- <span class="c-key">ansible.builtin.shell</span><span class="c-op">:</span> <span class="c-str">cat /etc/passwd | grep ubuntu</span>
+  <span class="c-key">register</span><span class="c-op">:</span> <span class="c-var">shell_output</span>
+
+<span class="c-cmt"># Use the result</span>
+- <span class="c-key">ansible.builtin.debug</span><span class="c-op">:</span>
+    <span class="c-key">msg</span><span class="c-op">:</span> <span class="c-str">"{{ shell_output.stdout }}"</span></pre>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-header" onclick="toggleAcc(this)">
+          👤 User & Group Management
+          <span class="acc-arrow">▼</span>
+        </button>
+        <div class="acc-body"><div class="acc-body-inner">
+          <div class="code-wrapper">
+            <div class="code-header"><span class="code-filename">user / group / authorized_key</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+            <pre>- <span class="c-key">ansible.builtin.user</span><span class="c-op">:</span>
+    <span class="c-key">name</span><span class="c-op">:</span> <span class="c-str">deploy</span>
+    <span class="c-key">groups</span><span class="c-op">:</span> [<span class="c-str">www-data</span>, <span class="c-str">sudo</span>]
+    <span class="c-key">shell</span><span class="c-op">:</span> <span class="c-str">/bin/bash</span>
+    <span class="c-key">create_home</span><span class="c-op">:</span> <span class="c-kw">true</span>
+
+- <span class="c-key">ansible.posix.authorized_key</span><span class="c-op">:</span>
+    <span class="c-key">user</span><span class="c-op">:</span> <span class="c-str">deploy</span>
+    <span class="c-key">key</span><span class="c-op">:</span> <span class="c-str">"{{ lookup('file', '~/.ssh/id_rsa.pub') }}"</span></pre>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-header" onclick="toggleAcc(this)">
+          🐍 Python / pip
+          <span class="acc-arrow">▼</span>
+        </button>
+        <div class="acc-body"><div class="acc-body-inner">
+          <div class="code-wrapper">
+            <div class="code-header"><span class="code-filename">pip</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+            <pre>- <span class="c-key">ansible.builtin.pip</span><span class="c-op">:</span>
+    <span class="c-key">name</span><span class="c-op">:</span> [<span class="c-str">flask</span>, <span class="c-str">gunicorn</span>]
+    <span class="c-key">virtualenv</span><span class="c-op">:</span> <span class="c-str">/opt/myapp/venv</span>
+    <span class="c-key">state</span><span class="c-op">:</span> <span class="c-str">present</span></pre>
+          </div>
+        </div></div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<a href="#" class="back-top" id="backTop">↑</a>
+
+<footer>
+  Built with ♥ — Ansible Interactive Guide · ansible.com docs
+</footer>
+
+<script>
+// ── Variable data ──
+const variables = [
+  // CONNECTION
+  { name: 'ansible_host', type: 'connection', desc: 'The IP address or hostname to connect to, overrides the inventory name.', example: 'ansible_host: 192.168.1.10' },
+  { name: 'ansible_port', type: 'connection', desc: 'SSH port number (default: 22).', example: 'ansible_port: 2222' },
+  { name: 'ansible_user', type: 'connection', desc: 'The user Ansible uses to log in to the remote host.', example: 'ansible_user: ubuntu' },
+  { name: 'ansible_password', type: 'connection', desc: 'SSH password (prefer SSH keys or ansible-vault).', example: 'ansible_password: "{{ vault_ssh_pass }}"' },
+  { name: 'ansible_ssh_private_key_file', type: 'connection', desc: 'Private key file used for SSH authentication.', example: 'ansible_ssh_private_key_file: ~/.ssh/id_rsa' },
+  { name: 'ansible_ssh_common_args', type: 'connection', desc: 'Extra arguments appended to sftp/scp/ssh commands.', example: 'ansible_ssh_common_args: "-o StrictHostKeyChecking=no"' },
+  { name: 'ansible_connection', type: 'connection', desc: 'Connection type: ssh (default), local, docker, winrm, network_cli, etc.', example: 'ansible_connection: local' },
+  { name: 'ansible_become', type: 'connection', desc: 'Enable privilege escalation for this host.', example: 'ansible_become: true' },
+  { name: 'ansible_become_method', type: 'connection', desc: 'Escalation method: sudo, su, pbrun, pfexec, runas.', example: 'ansible_become_method: sudo' },
+  { name: 'ansible_become_user', type: 'connection', desc: 'Target user for privilege escalation.', example: 'ansible_become_user: root' },
+  { name: 'ansible_become_password', type: 'connection', desc: 'Password for privilege escalation.', example: 'ansible_become_password: "{{ vault_sudo_pass }}"' },
+  { name: 'ansible_python_interpreter', type: 'connection', desc: 'Path to Python on the remote host. Use auto_silent for automatic detection.', example: 'ansible_python_interpreter: /usr/bin/python3' },
+  { name: 'ansible_shell_type', type: 'connection', desc: 'Shell type: sh, csh, fish, powershell.', example: 'ansible_shell_type: sh' },
+  { name: 'ansible_shell_executable', type: 'connection', desc: 'Override the default shell Ansible uses.', example: 'ansible_shell_executable: /bin/bash' },
+  { name: 'ansible_winrm_transport', type: 'connection', desc: 'WinRM transport for Windows: basic, kerberos, ntlm, credssp.', example: 'ansible_winrm_transport: ntlm' },
+
+  // MAGIC
+  { name: 'inventory_hostname', type: 'magic', desc: 'The name of the current host as defined in the inventory file.', example: '{{ inventory_hostname }}' },
+  { name: 'inventory_hostname_short', type: 'magic', desc: 'The short (first part) of inventory_hostname, before the first dot.', example: '{{ inventory_hostname_short }}' },
+  { name: 'ansible_play_hosts', type: 'magic', desc: 'List of all hosts currently active in the play.', example: '{{ ansible_play_hosts }}' },
+  { name: 'ansible_play_hosts_all', type: 'magic', desc: 'All hosts targeted by the current play (including failed/unreachable).', example: '{{ ansible_play_hosts_all }}' },
+  { name: 'groups', type: 'magic', desc: 'Dictionary of all groups and their member hosts in the inventory.', example: '{{ groups["webservers"] }}' },
+  { name: 'group_names', type: 'magic', desc: 'List of groups the current host belongs to.', example: '{{ group_names }}' },
+  { name: 'hostvars', type: 'magic', desc: 'Access variables of any host: hostvars[hostname][varname].', example: '{{ hostvars["db-01"]["ansible_host"] }}' },
+  { name: 'ansible_version', type: 'magic', desc: 'Dictionary with the current Ansible version information.', example: '{{ ansible_version.full }}' },
+  { name: 'play_hosts', type: 'magic', desc: 'Deprecated alias for ansible_play_hosts. Still widely used.', example: '{{ play_hosts }}' },
+  { name: 'ansible_check_mode', type: 'magic', desc: 'Boolean — True when running in --check (dry-run) mode.', example: 'when: not ansible_check_mode' },
+  { name: 'ansible_diff_mode', type: 'magic', desc: 'Boolean — True when running with --diff flag.', example: 'when: ansible_diff_mode' },
+  { name: 'ansible_run_tags', type: 'magic', desc: 'List of tags specified with --tags on the command line.', example: '{{ ansible_run_tags }}' },
+  { name: 'ansible_skip_tags', type: 'magic', desc: 'List of tags specified with --skip-tags.', example: '{{ ansible_skip_tags }}' },
+  { name: 'playbook_dir', type: 'magic', desc: 'Absolute path to the directory of the currently running playbook.', example: '{{ playbook_dir }}/files/app.conf' },
+  { name: 'role_path', type: 'magic', desc: 'Absolute path to the current role directory.', example: '{{ role_path }}/templates/' },
+  { name: 'inventory_dir', type: 'magic', desc: 'Absolute path to the inventory file or directory.', example: '{{ inventory_dir }}' },
+  { name: 'ansible_loop', type: 'magic', desc: 'Extended loop info when using loop with extended: true.', example: '{{ ansible_loop.index }}' },
+  { name: 'ansible_loop_var', type: 'magic', desc: 'Name of the loop variable (default: item). Can be overridden with loop_var.', example: 'loop_control:\n  loop_var: my_item' },
+  { name: 'item', type: 'magic', desc: 'The current loop item when using loop or with_items.', example: '{{ item.name }}' },
+
+  // PLAYBOOK
+  { name: 'register', type: 'playbook', desc: 'Stores a task result in a variable for later use. Not a variable itself — the keyword that creates one.', example: 'register: result\n- debug: msg="{{ result.stdout }}"' },
+  { name: 'vars', type: 'playbook', desc: 'Play-level or task-level variable definitions (inline in the playbook).', example: 'vars:\n  app_port: 8080' },
+  { name: 'vars_files', type: 'playbook', desc: 'Load variables from external YAML files.', example: 'vars_files:\n  - secrets.yml' },
+  { name: 'vars_prompt', type: 'playbook', desc: 'Prompt the user for a variable value at runtime.', example: 'vars_prompt:\n  - name: db_pass\n    prompt: "Enter DB password"' },
+  { name: 'set_fact', type: 'playbook', desc: 'Module that sets host-level variables during a play run, persisting for remaining tasks.', example: '- set_fact:\n    my_var: "hello"' },
+  { name: 'defaults/main.yml', type: 'playbook', desc: 'Lowest-priority role variables. Easily overridden by any other source.', example: 'http_port: 80' },
+  { name: 'vars/main.yml', type: 'playbook', desc: 'Higher-priority role variables. Hard to override from outside the role.', example: '_internal_port: 9000' },
+  { name: 'group_vars/all.yml', type: 'playbook', desc: 'Variables applied to every host in the inventory.', example: 'ntp_server: pool.ntp.org' },
+  { name: 'group_vars/<group>.yml', type: 'playbook', desc: 'Variables applied to all hosts in a specific group.', example: 'db_port: 5432' },
+  { name: 'host_vars/<hostname>.yml', type: 'playbook', desc: 'Variables applied to a single named host.', example: 'ansible_host: 10.0.0.5' },
+  { name: 'extra vars (-e)', type: 'playbook', desc: 'Highest priority. Set with -e on CLI or @file.yml. Always wins.', example: 'ansible-playbook site.yml -e "env=prod"' },
+
+  // FACTS
+  { name: 'ansible_facts', type: 'fact', desc: 'Top-level dict of all gathered facts. Access as ansible_facts["os_family"] or ansible_os_family.', example: '{{ ansible_facts }}' },
+  { name: 'ansible_os_family', type: 'fact', desc: 'OS family: Debian, RedHat, Archlinux, Darwin, Windows, etc.', example: 'when: ansible_os_family == "Debian"' },
+  { name: 'ansible_distribution', type: 'fact', desc: 'OS distribution name: Ubuntu, CentOS, Fedora, etc.', example: '{{ ansible_distribution }}' },
+  { name: 'ansible_distribution_version', type: 'fact', desc: 'Full OS version string (e.g., 22.04).', example: '{{ ansible_distribution_version }}' },
+  { name: 'ansible_distribution_major_version', type: 'fact', desc: 'Major version number as a string (e.g., "22").', example: 'when: ansible_distribution_major_version | int >= 20' },
+  { name: 'ansible_architecture', type: 'fact', desc: 'CPU architecture: x86_64, aarch64, armv7l, etc.', example: '{{ ansible_architecture }}' },
+  { name: 'ansible_hostname', type: 'fact', desc: 'Short hostname of the remote machine.', example: '{{ ansible_hostname }}' },
+  { name: 'ansible_fqdn', type: 'fact', desc: 'Fully qualified domain name of the remote host.', example: '{{ ansible_fqdn }}' },
+  { name: 'ansible_default_ipv4', type: 'fact', desc: 'Dict with default IPv4 info: address, gateway, interface, netmask, etc.', example: '{{ ansible_default_ipv4.address }}' },
+  { name: 'ansible_default_ipv6', type: 'fact', desc: 'Dict with default IPv6 info.', example: '{{ ansible_default_ipv6.address }}' },
+  { name: 'ansible_interfaces', type: 'fact', desc: 'List of network interface names on the host.', example: '{{ ansible_interfaces }}' },
+  { name: 'ansible_memtotal_mb', type: 'fact', desc: 'Total RAM in megabytes.', example: '{{ ansible_memtotal_mb }}' },
+  { name: 'ansible_processor_count', type: 'fact', desc: 'Number of physical CPU processors.', example: '{{ ansible_processor_count }}' },
+  { name: 'ansible_processor_cores', type: 'fact', desc: 'Number of cores per processor.', example: '{{ ansible_processor_cores }}' },
+  { name: 'ansible_processor_vcpus', type: 'fact', desc: 'Total virtual CPUs (processor_count × cores × threads).', example: '{{ ansible_processor_vcpus }}' },
+  { name: 'ansible_kernel', type: 'fact', desc: 'Kernel version string.', example: '{{ ansible_kernel }}' },
+  { name: 'ansible_uptime_seconds', type: 'fact', desc: 'System uptime in seconds.', example: '{{ ansible_uptime_seconds }}' },
+  { name: 'ansible_date_time', type: 'fact', desc: 'Dict with date/time info: date, time, epoch, timezone, etc.', example: '{{ ansible_date_time.iso8601 }}' },
+  { name: 'ansible_env', type: 'fact', desc: 'Dict of environment variables on the remote host.', example: '{{ ansible_env.HOME }}' },
+  { name: 'ansible_user_id', type: 'fact', desc: 'Username of the remote user running tasks.', example: '{{ ansible_user_id }}' },
+  { name: 'ansible_user_uid', type: 'fact', desc: 'UID number of the remote user.', example: '{{ ansible_user_uid }}' },
+  { name: 'ansible_service_mgr', type: 'fact', desc: 'Init system: systemd, upstart, sysvinit, etc.', example: 'when: ansible_service_mgr == "systemd"' },
+  { name: 'ansible_virtualization_type', type: 'fact', desc: 'Virtualization type: kvm, vmware, docker, lxc, etc.', example: '{{ ansible_virtualization_type }}' },
+  { name: 'ansible_mounts', type: 'fact', desc: 'List of dicts describing mounted filesystems.', example: '{{ ansible_mounts | selectattr("mount","eq","/") | first }}' },
+
+  // ENV
+  { name: 'ANSIBLE_HOST_KEY_CHECKING', type: 'env', desc: 'Env var to disable SSH host key checking (same as host_key_checking in cfg).', example: 'export ANSIBLE_HOST_KEY_CHECKING=False' },
+  { name: 'ANSIBLE_INVENTORY', type: 'env', desc: 'Default inventory file/directory path.', example: 'export ANSIBLE_INVENTORY=./inventory/prod' },
+  { name: 'ANSIBLE_ROLES_PATH', type: 'env', desc: 'Colon-separated list of paths to search for roles.', example: 'export ANSIBLE_ROLES_PATH=./roles:~/.ansible/roles' },
+  { name: 'ANSIBLE_VAULT_PASSWORD_FILE', type: 'env', desc: 'Path to a file containing the vault password.', example: 'export ANSIBLE_VAULT_PASSWORD_FILE=~/.vault_pass' },
+  { name: 'ANSIBLE_REMOTE_USER', type: 'env', desc: 'Default SSH user (same as remote_user in ansible.cfg).', example: 'export ANSIBLE_REMOTE_USER=ubuntu' },
+  { name: 'ANSIBLE_PRIVATE_KEY_FILE', type: 'env', desc: 'Default private key for SSH connections.', example: 'export ANSIBLE_PRIVATE_KEY_FILE=~/.ssh/deploy_key' },
+  { name: 'ANSIBLE_STDOUT_CALLBACK', type: 'env', desc: 'Output format: default, yaml, minimal, json, dense, debug.', example: 'export ANSIBLE_STDOUT_CALLBACK=yaml' },
+  { name: 'ANSIBLE_FORKS', type: 'env', desc: 'Number of parallel processes (default 5).', example: 'export ANSIBLE_FORKS=20' },
+  { name: 'ANSIBLE_TIMEOUT', type: 'env', desc: 'SSH connection timeout in seconds.', example: 'export ANSIBLE_TIMEOUT=30' },
+  { name: 'ANSIBLE_GATHERING', type: 'env', desc: 'Fact gathering mode: smart, implicit, explicit.', example: 'export ANSIBLE_GATHERING=smart' },
+  { name: 'ANSIBLE_LOG_PATH', type: 'env', desc: 'File to log Ansible output to.', example: 'export ANSIBLE_LOG_PATH=./ansible.log' },
+];
+
+let currentType = 'all';
+
+function renderVars(list) {
+  const tbody = document.getElementById('varBody');
+  tbody.innerHTML = list.map(v => `
+    <tr data-type="${v.type}">
+      <td><span class="var-name">${v.name}</span></td>
+      <td><span class="var-type type-${v.type}">${v.type}</span></td>
+      <td>
+        <div class="var-desc">${v.desc}</div>
+        <div class="var-example"># ${v.example}</div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterVars() {
+  const q = document.getElementById('varSearch').value.toLowerCase();
+  const filtered = variables.filter(v => {
+    const matchType = currentType === 'all' || v.type === currentType;
+    const matchQ = !q || v.name.toLowerCase().includes(q) || v.desc.toLowerCase().includes(q);
+    return matchType && matchQ;
+  });
+  renderVars(filtered);
+}
+
+function filterType(btn, type) {
+  currentType = type;
+  document.querySelectorAll('.var-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterVars();
+}
+
+renderVars(variables);
+
+// ── Tabs ──
+function switchTab(btn, panelId) {
+  const tabList = btn.closest('.tab-list');
+  const tabs = tabList.parentElement;
+  tabList.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  tabs.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(panelId).classList.add('active');
+}
+
+// ── Accordion ──
+function toggleAcc(btn) {
+  const item = btn.closest('.acc-item');
+  item.classList.toggle('open');
+}
+
+// ── Copy code ──
+function copyCode(btn) {
+  const pre = btn.closest('.code-wrapper').querySelector('pre');
+  const text = pre.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ── Scroll animations ──
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.section').forEach(s => observer.observe(s));
+
+// ── Progress bar ──
+window.addEventListener('scroll', () => {
+  const st = window.scrollY;
+  const dh = document.documentElement.scrollHeight - window.innerHeight;
+  document.getElementById('progress').style.width = (st / dh * 100) + '%';
+  const bt = document.getElementById('backTop');
+  st > 400 ? bt.classList.add('show') : bt.classList.remove('show');
+});
+
+// ── Active nav pill ──
+const sections = document.querySelectorAll('section.section');
+const pills = document.querySelectorAll('.nav-pill');
+window.addEventListener('scroll', () => {
+  let cur = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 120) cur = s.id; });
+  pills.forEach(p => {
+    p.classList.toggle('active', p.getAttribute('href') === '#' + cur);
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git Bash — Complete Command Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600;700&family=Barlow+Condensed:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f2eb;
+  --bg2: #ece8df;
+  --ink: #1a1714;
+  --ink2: #4a4540;
+  --ink3: #7a7268;
+  --rule: #d4cfc6;
+  --accent: #c8421a;
+  --accent2: #2a6b3c;
+  --accent3: #1a4a8a;
+  --accent4: #7a2a8a;
+  --accent5: #c87a1a;
+  --code-bg: #1a1714;
+  --code-fg: #e8e2d8;
+  --tag-r: rgba(200,66,26,0.12);
+  --tag-g: rgba(42,107,60,0.12);
+  --tag-b: rgba(26,74,138,0.12);
+  --tag-p: rgba(122,42,138,0.12);
+  --tag-o: rgba(200,122,26,0.12);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Barlow Condensed', sans-serif;
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+header {
+  background: var(--ink);
+  color: var(--bg);
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 40px 40px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: end;
+}
+.header-eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+h1 {
+  font-size: clamp(56px, 10vw, 120px);
+  font-weight: 900;
+  line-height: 0.88;
+  letter-spacing: -3px;
+  text-transform: uppercase;
+}
+h1 span { color: var(--accent); }
+.header-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: rgba(245,242,235,0.45);
+  margin-top: 16px;
+  letter-spacing: 0.5px;
+  line-height: 1.7;
+}
+.header-count {
+  text-align: right;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.header-count .num {
+  font-size: 64px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+  display: block;
+}
+.header-count .lbl {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(245,242,235,0.4);
+}
+.header-stripe {
+  height: 4px;
+  background: repeating-linear-gradient(90deg, var(--accent) 0px, var(--accent) 24px, transparent 24px, transparent 32px);
+}
+
+/* ── TOOLBAR ── */
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--ink);
+  border-bottom: 1px solid rgba(245,242,235,0.1);
+  padding: 0 40px;
+}
+.toolbar-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  gap: 0;
+  align-items: stretch;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.toolbar-inner::-webkit-scrollbar { display: none; }
+.tb-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(245,242,235,0.4);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 14px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color .15s, border-color .15s;
+}
+.tb-btn:hover { color: var(--bg); }
+.tb-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ── SEARCH ── */
+.search-bar {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--rule);
+  padding: 16px 40px;
+  position: sticky;
+  top: 49px;
+  z-index: 99;
+}
+.search-bar-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.search-wrap {
+  position: relative;
+  flex: 1;
+  max-width: 480px;
+}
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: var(--ink3);
+  pointer-events: none;
+}
+#search {
+  width: 100%;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 10px 14px 10px 38px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color .2s;
+}
+#search:focus { border-color: var(--accent); }
+#search::placeholder { color: var(--ink3); }
+.result-count {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--ink3);
+  white-space: nowrap;
+}
+
+/* ── MAIN ── */
+.main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px 80px;
+}
+
+/* ── SECTION ── */
+.cmd-section {
+  margin-top: 56px;
+  transition: opacity .3s;
+}
+.cmd-section.hidden { display: none; }
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--ink);
+  margin-bottom: 0;
+}
+.section-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--ink3);
+  letter-spacing: 2px;
+}
+.section-title {
+  font-size: 32px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.5px;
+  flex: 1;
+}
+.section-count {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--ink3);
+}
+
+/* ── CMD GRID ── */
+.cmd-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  margin-top: 1px;
+}
+
+.cmd-card {
+  background: var(--bg);
+  padding: 20px 22px;
+  transition: background .15s;
+  position: relative;
+}
+.cmd-card:hover { background: var(--bg2); }
+.cmd-card.hidden { display: none; }
+
+.cmd-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.cmd-code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.4;
+  word-break: break-all;
+}
+.cmd-code .git-kw { color: var(--accent); }
+.cmd-code .cmd-kw { color: var(--accent3); }
+.cmd-code .arg { color: var(--accent2); }
+.cmd-code .flag { color: var(--accent4); }
+.cmd-code .val { color: var(--accent5); }
+
+.copy-btn {
+  flex-shrink: 0;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: none;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  color: var(--ink3);
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+.copy-btn.ok { border-color: var(--accent2); color: var(--accent2); }
+
+.cmd-desc {
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--ink2);
+  line-height: 1.55;
+  margin-bottom: 10px;
+}
+
+.cmd-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  padding: 2px 7px;
+  border-radius: 2px;
+  text-transform: uppercase;
+}
+.tag-r { background: var(--tag-r); color: var(--accent); }
+.tag-g { background: var(--tag-g); color: var(--accent2); }
+.tag-b { background: var(--tag-b); color: var(--accent3); }
+.tag-p { background: var(--tag-p); color: var(--accent4); }
+.tag-o { background: var(--tag-o); color: var(--accent5); }
+
+/* ── NO RESULTS ── */
+#noResults {
+  display: none;
+  text-align: center;
+  padding: 80px 20px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--ink3);
+}
+#noResults .nr-big { font-size: 48px; margin-bottom: 16px; }
+#noResults .nr-text { font-size: 13px; }
+
+/* ── BACK TO TOP ── */
+.btt {
+  position: fixed;
+  bottom: 28px; right: 28px;
+  width: 44px; height: 44px;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  border-radius: 3px;
+  font-size: 18px;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .3s, transform .3s;
+  z-index: 200;
+}
+.btt.show { opacity: 1; transform: translateY(0); }
+.btt:hover { background: var(--accent); }
+
+/* ── PROGRESS ── */
+.progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 3px;
+  background: var(--accent);
+  z-index: 300;
+  width: 0%;
+  transition: width .1s;
+}
+
+/* ── FOOTER ── */
+footer {
+  background: var(--ink);
+  color: rgba(245,242,235,0.3);
+  text-align: center;
+  padding: 28px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+@media(max-width:700px){
+  .header-inner { grid-template-columns: 1fr; }
+  .header-count { text-align: left; }
+  .toolbar, .search-bar { padding-left: 16px; padding-right: 16px; }
+  .main { padding: 0 16px 60px; }
+  .cmd-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="progress" id="prog"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div>
+      <div class="header-eyebrow">Windows Git Bash · Complete Reference</div>
+      <h1>Git<br><span>Commands</span></h1>
+      <div class="header-sub">
+        Every command available in Git Bash on Windows.<br>
+        Search, filter by category, copy with one click.
+      </div>
+    </div>
+    <div class="header-count">
+      <span class="num" id="totalCount">0</span>
+      <span class="lbl">commands</span>
+    </div>
+  </div>
+  <div class="header-stripe"></div>
+</header>
+
+<!-- TOOLBAR -->
+<nav class="toolbar">
+  <div class="toolbar-inner" id="toolbar">
+    <button class="tb-btn active" onclick="filterSection(this,'all')">All</button>
+    <button class="tb-btn" onclick="filterSection(this,'setup')">Setup</button>
+    <button class="tb-btn" onclick="filterSection(this,'init')">Init & Clone</button>
+    <button class="tb-btn" onclick="filterSection(this,'stage')">Stage & Snapshot</button>
+    <button class="tb-btn" onclick="filterSection(this,'branch')">Branch & Merge</button>
+    <button class="tb-btn" onclick="filterSection(this,'remote')">Remote</button>
+    <button class="tb-btn" onclick="filterSection(this,'inspect')">Inspect & Log</button>
+    <button class="tb-btn" onclick="filterSection(this,'undo')">Undo & Reset</button>
+    <button class="tb-btn" onclick="filterSection(this,'rebase')">Rebase & Cherry-pick</button>
+    <button class="tb-btn" onclick="filterSection(this,'stash')">Stash</button>
+    <button class="tb-btn" onclick="filterSection(this,'tag')">Tags</button>
+    <button class="tb-btn" onclick="filterSection(this,'submodule')">Submodules</button>
+    <button class="tb-btn" onclick="filterSection(this,'advanced')">Advanced</button>
+    <button class="tb-btn" onclick="filterSection(this,'bash')">Bash Extras</button>
+  </div>
+</nav>
+
+<!-- SEARCH -->
+<div class="search-bar">
+  <div class="search-bar-inner">
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input id="search" type="text" placeholder="Search commands, flags, descriptions..." oninput="doSearch()">
+    </div>
+    <span class="result-count" id="resCnt"></span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main class="main" id="main"></main>
+<div id="noResults">
+  <div class="nr-big">∅</div>
+  <div class="nr-text">No commands match your search.</div>
+</div>
+
+<button class="btt" id="btt" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<footer>GIT BASH COMMAND REFERENCE &nbsp;·&nbsp; git-scm.com &nbsp;·&nbsp; All commands valid in Git for Windows (Git Bash)</footer>
+
+<script>
+const sections = [
+  {
+    id: 'setup',
+    title: 'Setup & Configuration',
+    cmds: [
+      { code: 'git config --global user.name "Your Name"', desc: 'Set the name that will be attached to all your commits globally.', tags: ['config','global'] },
+      { code: 'git config --global user.email "you@example.com"', desc: 'Set the email address attached to all commits globally.', tags: ['config','global'] },
+      { code: 'git config --global core.editor "code --wait"', desc: 'Set VS Code as the default commit message editor. Replace with notepad, vim, nano, etc.', tags: ['config','editor'] },
+      { code: 'git config --global core.autocrlf true', desc: 'Auto-convert LF to CRLF on checkout (recommended for Windows).', tags: ['config','windows'] },
+      { code: 'git config --global core.autocrlf input', desc: 'Convert CRLF to LF on commit but not on checkout (for cross-platform repos).', tags: ['config','windows'] },
+      { code: 'git config --global init.defaultBranch main', desc: 'Set the default branch name for new repositories to "main" instead of "master".', tags: ['config','global'] },
+      { code: 'git config --list', desc: 'List all configuration settings currently active (merged global + local).', tags: ['config','read'] },
+      { code: 'git config --list --show-origin', desc: 'List all settings with the file they come from.', tags: ['config','read'] },
+      { code: 'git config --global --edit', desc: 'Open the global .gitconfig file in the configured editor.', tags: ['config','edit'] },
+      { code: 'git config --local user.email "work@company.com"', desc: 'Override global email for just this repository.', tags: ['config','local'] },
+      { code: 'git config --global alias.st status', desc: 'Create a short alias: git st → git status.', tags: ['config','alias'] },
+      { code: 'git config --global alias.lg "log --oneline --graph --all"', desc: 'Create a pretty graph log alias: git lg.', tags: ['config','alias'] },
+      { code: 'git config --global credential.helper manager', desc: 'Use Git Credential Manager (bundled with Git for Windows) to store credentials.', tags: ['config','auth'] },
+      { code: 'git config --global http.proxy http://proxy:8080', desc: 'Set an HTTP proxy for Git (corporate networks).', tags: ['config','network'] },
+      { code: 'git config --unset http.proxy', desc: 'Remove a specific configuration key.', tags: ['config','edit'] },
+      { code: 'git config --global color.ui auto', desc: 'Enable coloured terminal output automatically.', tags: ['config','ui'] },
+      { code: 'git help config', desc: 'Open the full git-config manual page in the browser.', tags: ['help'] },
+    ]
+  },
+  {
+    id: 'init',
+    title: 'Init & Clone',
+    cmds: [
+      { code: 'git init', desc: 'Initialise a new Git repository in the current directory, creating a hidden .git folder.', tags: ['init'] },
+      { code: 'git init my-project', desc: 'Create a new directory called my-project and initialise a repository inside it.', tags: ['init'] },
+      { code: 'git init --bare repo.git', desc: 'Create a bare repository (no working tree) — used for shared/central repos.', tags: ['init','server'] },
+      { code: 'git clone https://github.com/user/repo.git', desc: 'Clone a remote repository into a new directory named after the repo.', tags: ['clone','remote'] },
+      { code: 'git clone https://github.com/user/repo.git my-dir', desc: 'Clone into a specific directory name.', tags: ['clone','remote'] },
+      { code: 'git clone --depth 1 https://github.com/user/repo.git', desc: 'Shallow clone — only the latest commit, faster for large repos.', tags: ['clone','remote','shallow'] },
+      { code: 'git clone --branch develop https://github.com/user/repo.git', desc: 'Clone and immediately check out a specific branch.', tags: ['clone','remote','branch'] },
+      { code: 'git clone --recurse-submodules https://github.com/user/repo.git', desc: 'Clone and initialise all submodules automatically.', tags: ['clone','submodule'] },
+      { code: 'git clone git@github.com:user/repo.git', desc: 'Clone using SSH instead of HTTPS.', tags: ['clone','ssh'] },
+    ]
+  },
+  {
+    id: 'stage',
+    title: 'Stage & Snapshot',
+    cmds: [
+      { code: 'git status', desc: 'Show the working tree status — which files are modified, staged, or untracked.', tags: ['status','daily'] },
+      { code: 'git status -s', desc: 'Short/compact status output (two-letter codes per file).', tags: ['status'] },
+      { code: 'git add file.txt', desc: 'Stage a specific file, adding it to the index ready to commit.', tags: ['stage','daily'] },
+      { code: 'git add .', desc: 'Stage all changes in the current directory and subdirectories.', tags: ['stage','daily'] },
+      { code: 'git add -A', desc: 'Stage all changes (new, modified, deleted) across the entire working tree.', tags: ['stage'] },
+      { code: 'git add -p', desc: 'Interactively choose which hunks (parts) of files to stage — great for splitting commits.', tags: ['stage','interactive'] },
+      { code: 'git add -u', desc: 'Stage all tracked files that have been modified or deleted (not new files).', tags: ['stage'] },
+      { code: 'git add *.js', desc: 'Stage all .js files in the current directory using a glob pattern.', tags: ['stage','glob'] },
+      { code: 'git restore --staged file.txt', desc: 'Unstage a file without losing your changes (opposite of git add).', tags: ['stage','undo'] },
+      { code: 'git restore file.txt', desc: 'Discard working directory changes to a file (dangerous — changes are lost).', tags: ['undo','discard'] },
+      { code: 'git commit -m "Your message"', desc: 'Create a commit with a message inline — the most common workflow.', tags: ['commit','daily'] },
+      { code: 'git commit', desc: 'Open the configured editor to write a multi-line commit message.', tags: ['commit'] },
+      { code: 'git commit -am "message"', desc: 'Stage all tracked modified files and commit in one command (skips new/untracked files).', tags: ['commit','daily'] },
+      { code: 'git commit --amend', desc: 'Modify the last commit — opens editor to change the message, or includes new staged changes.', tags: ['commit','undo'] },
+      { code: 'git commit --amend --no-edit', desc: 'Amend last commit but keep the existing message unchanged.', tags: ['commit','undo'] },
+      { code: 'git commit --amend -m "New message"', desc: 'Change only the last commit message inline.', tags: ['commit','undo'] },
+      { code: 'git commit --allow-empty -m "CI trigger"', desc: 'Create a commit with no file changes (useful to trigger CI pipelines).', tags: ['commit','advanced'] },
+      { code: 'git diff', desc: 'Show unstaged changes — what differs between working directory and index.', tags: ['diff','inspect'] },
+      { code: 'git diff --staged', desc: 'Show staged changes — what differs between index and last commit.', tags: ['diff','inspect'] },
+      { code: 'git diff HEAD', desc: 'Show all changes (staged + unstaged) since the last commit.', tags: ['diff','inspect'] },
+      { code: 'git diff branch1..branch2', desc: 'Show differences between two branches.', tags: ['diff','branch'] },
+      { code: 'git diff --stat', desc: 'Show a summary of changed files and line counts rather than full diff.', tags: ['diff','inspect'] },
+      { code: 'git rm file.txt', desc: 'Remove a file from both the working directory and the index (stages the deletion).', tags: ['remove'] },
+      { code: 'git rm --cached file.txt', desc: 'Remove a file from Git tracking only, keeping it on disk — useful to add to .gitignore.', tags: ['remove','gitignore'] },
+      { code: 'git mv old.txt new.txt', desc: 'Rename or move a file and stage the change.', tags: ['rename'] },
+    ]
+  },
+  {
+    id: 'branch',
+    title: 'Branch & Merge',
+    cmds: [
+      { code: 'git branch', desc: 'List all local branches. Current branch is marked with *.', tags: ['branch'] },
+      { code: 'git branch -a', desc: 'List all local and remote-tracking branches.', tags: ['branch','remote'] },
+      { code: 'git branch -v', desc: 'List branches with their last commit hash and message.', tags: ['branch','inspect'] },
+      { code: 'git branch feature/login', desc: 'Create a new branch called feature/login at the current HEAD.', tags: ['branch','create'] },
+      { code: 'git branch feature/login main', desc: 'Create a new branch starting at main (instead of current HEAD).', tags: ['branch','create'] },
+      { code: 'git branch -d feature/login', desc: 'Delete a branch (safe — refuses if branch has unmerged changes).', tags: ['branch','delete'] },
+      { code: 'git branch -D feature/login', desc: 'Force-delete a branch even if it has unmerged changes.', tags: ['branch','delete','force'] },
+      { code: 'git branch -m old-name new-name', desc: 'Rename a branch.', tags: ['branch','rename'] },
+      { code: 'git switch feature/login', desc: 'Switch to an existing branch (modern alternative to git checkout).', tags: ['branch','switch','daily'] },
+      { code: 'git switch -c feature/new', desc: 'Create and switch to a new branch in one command.', tags: ['branch','create','daily'] },
+      { code: 'git switch -c feature/new origin/feature/new', desc: 'Create a local branch tracking a remote branch and switch to it.', tags: ['branch','remote','tracking'] },
+      { code: 'git checkout feature/login', desc: 'Switch to a branch (classic syntax, still widely used).', tags: ['branch','switch'] },
+      { code: 'git checkout -b feature/new', desc: 'Create and switch to a new branch (classic syntax).', tags: ['branch','create'] },
+      { code: 'git checkout -b fix origin/fix', desc: 'Create a local branch from a remote branch and track it.', tags: ['branch','remote'] },
+      { code: 'git checkout --', desc: 'Discard all unstaged changes in the working directory.', tags: ['undo'] },
+      { code: 'git merge feature/login', desc: 'Merge the specified branch into the current branch.', tags: ['merge','daily'] },
+      { code: 'git merge --no-ff feature/login', desc: 'Merge with a merge commit even if fast-forward is possible — preserves branch history.', tags: ['merge'] },
+      { code: 'git merge --squash feature/login', desc: 'Squash all branch commits into one staged change, then commit manually.', tags: ['merge','squash'] },
+      { code: 'git merge --abort', desc: 'Abort an in-progress merge and restore pre-merge state.', tags: ['merge','undo'] },
+      { code: 'git merge -s ours feature/login', desc: 'Merge but ignore all changes from the other branch (keep ours).', tags: ['merge','strategy'] },
+      { code: 'git mergetool', desc: 'Open the configured merge conflict resolution tool.', tags: ['merge','conflict'] },
+    ]
+  },
+  {
+    id: 'remote',
+    title: 'Remote Repositories',
+    cmds: [
+      { code: 'git remote -v', desc: 'List all remotes with their fetch/push URLs.', tags: ['remote','inspect'] },
+      { code: 'git remote add origin https://github.com/user/repo.git', desc: 'Add a remote named "origin" pointing to a URL.', tags: ['remote','add'] },
+      { code: 'git remote add upstream https://github.com/original/repo.git', desc: 'Add an upstream remote (common fork workflow).', tags: ['remote','add'] },
+      { code: 'git remote rename origin new-name', desc: 'Rename an existing remote.', tags: ['remote'] },
+      { code: 'git remote remove origin', desc: 'Remove a remote entirely.', tags: ['remote','delete'] },
+      { code: 'git remote set-url origin https://new-url.git', desc: 'Change the URL of an existing remote.', tags: ['remote','edit'] },
+      { code: 'git remote show origin', desc: 'Show detailed info about a remote — tracked branches, fetch/push URLs.', tags: ['remote','inspect'] },
+      { code: 'git remote prune origin', desc: 'Delete remote-tracking refs that no longer exist on the remote.', tags: ['remote','clean'] },
+      { code: 'git fetch', desc: 'Download all new data from all remotes without merging.', tags: ['remote','fetch','daily'] },
+      { code: 'git fetch origin', desc: 'Fetch from the specific "origin" remote.', tags: ['remote','fetch'] },
+      { code: 'git fetch --all', desc: 'Fetch from all configured remotes.', tags: ['remote','fetch'] },
+      { code: 'git fetch --prune', desc: 'Fetch and delete local remote-tracking refs that no longer exist on the remote.', tags: ['remote','fetch','clean'] },
+      { code: 'git pull', desc: 'Fetch and merge changes from the tracked remote branch into current branch.', tags: ['remote','pull','daily'] },
+      { code: 'git pull --rebase', desc: 'Fetch and rebase instead of merge — cleaner linear history.', tags: ['remote','pull','rebase'] },
+      { code: 'git pull origin main', desc: 'Pull from a specific remote and branch.', tags: ['remote','pull'] },
+      { code: 'git pull --ff-only', desc: 'Pull only if a fast-forward is possible (no merge commit).', tags: ['remote','pull'] },
+      { code: 'git push', desc: 'Push committed changes to the tracked upstream branch.', tags: ['remote','push','daily'] },
+      { code: 'git push origin main', desc: 'Push local main to the origin remote.', tags: ['remote','push','daily'] },
+      { code: 'git push -u origin feature/login', desc: 'Push and set the upstream tracking branch at the same time.', tags: ['remote','push'] },
+      { code: 'git push --all origin', desc: 'Push all local branches to the remote.', tags: ['remote','push'] },
+      { code: 'git push --tags', desc: 'Push all local tags to the remote.', tags: ['remote','push','tags'] },
+      { code: 'git push origin --delete feature/old', desc: 'Delete a branch on the remote.', tags: ['remote','push','delete'] },
+      { code: 'git push --force-with-lease', desc: 'Force push but fail if someone else pushed since your last fetch — safer than --force.', tags: ['remote','push','force'] },
+      { code: 'git push --force', desc: 'Force push, overwriting remote history. Dangerous on shared branches!', tags: ['remote','push','force','danger'] },
+    ]
+  },
+  {
+    id: 'inspect',
+    title: 'Inspect & Log',
+    cmds: [
+      { code: 'git log', desc: 'Show the commit history for the current branch.', tags: ['log','inspect'] },
+      { code: 'git log --oneline', desc: 'Compact one-line per commit view.', tags: ['log','inspect'] },
+      { code: 'git log --oneline --graph --all', desc: 'ASCII graph of all branches and their commit history.', tags: ['log','inspect','graph'] },
+      { code: 'git log --oneline --graph --decorate --all', desc: 'Graph with branch/tag label decorations.', tags: ['log','inspect','graph'] },
+      { code: 'git log -n 10', desc: 'Show only the last 10 commits.', tags: ['log'] },
+      { code: 'git log --author="Alice"', desc: 'Filter commits by author name.', tags: ['log','filter'] },
+      { code: 'git log --since="2024-01-01" --until="2024-12-31"', desc: 'Show commits within a date range.', tags: ['log','filter'] },
+      { code: 'git log --grep="fix"', desc: 'Filter commits whose message contains "fix".', tags: ['log','filter'] },
+      { code: 'git log -S "function login"', desc: 'Pickaxe search — find commits that added or removed a specific string.', tags: ['log','search'] },
+      { code: 'git log -p', desc: 'Show commits with their full diffs (patch output).', tags: ['log','diff'] },
+      { code: 'git log --stat', desc: 'Show commits with a file-change summary (lines added/removed).', tags: ['log','stat'] },
+      { code: 'git log --follow file.txt', desc: 'Show history of a file including renames.', tags: ['log','file'] },
+      { code: 'git log main..feature', desc: 'Show commits in feature that are not in main.', tags: ['log','compare'] },
+      { code: 'git log --merges', desc: 'Show only merge commits.', tags: ['log','filter'] },
+      { code: 'git log --no-merges', desc: 'Exclude merge commits from the log.', tags: ['log','filter'] },
+      { code: 'git show HEAD', desc: 'Show the details and diff of the latest commit.', tags: ['inspect','commit'] },
+      { code: 'git show abc1234', desc: 'Show details of a specific commit by hash.', tags: ['inspect','commit'] },
+      { code: 'git show HEAD:file.txt', desc: 'Show the content of a file at a specific commit.', tags: ['inspect','file'] },
+      { code: 'git blame file.txt', desc: 'Show which commit and author last modified each line of a file.', tags: ['inspect','blame'] },
+      { code: 'git blame -L 10,25 file.txt', desc: 'Blame only lines 10-25 of a file.', tags: ['inspect','blame'] },
+      { code: 'git shortlog -sn', desc: 'Summary of commits per author, sorted by count.', tags: ['log','stats'] },
+      { code: 'git describe --tags', desc: 'Describe current commit relative to the nearest tag.', tags: ['inspect','tags'] },
+      { code: 'git cat-file -p HEAD', desc: 'Show the raw Git object content of HEAD.', tags: ['inspect','advanced'] },
+      { code: 'git ls-files', desc: 'List all files tracked by Git in the current repo.', tags: ['inspect','files'] },
+      { code: 'git ls-tree HEAD', desc: 'Show the tree object of the latest commit.', tags: ['inspect','advanced'] },
+      { code: 'git count-objects -vH', desc: 'Show stats on loose objects and pack file sizes.', tags: ['inspect','advanced'] },
+    ]
+  },
+  {
+    id: 'undo',
+    title: 'Undo & Reset',
+    cmds: [
+      { code: 'git revert HEAD', desc: 'Create a new commit that undoes the changes in the last commit — safe for shared history.', tags: ['undo','safe'] },
+      { code: 'git revert abc1234', desc: 'Revert a specific commit by hash.', tags: ['undo','safe'] },
+      { code: 'git revert HEAD~3..HEAD', desc: 'Revert the last 3 commits.', tags: ['undo','safe'] },
+      { code: 'git revert --no-commit HEAD', desc: 'Revert changes into staging without auto-committing.', tags: ['undo','safe'] },
+      { code: 'git reset HEAD~1', desc: 'Undo the last commit but keep changes staged (mixed mode is default).', tags: ['undo','reset'] },
+      { code: 'git reset --soft HEAD~1', desc: 'Undo last commit, keep changes staged. Commit disappears, files stay as-is in index.', tags: ['undo','reset'] },
+      { code: 'git reset --mixed HEAD~1', desc: 'Undo last commit and unstage changes. Default mode. Files remain in working directory.', tags: ['undo','reset'] },
+      { code: 'git reset --hard HEAD~1', desc: 'Undo last commit AND discard all changes. Destructive — data may be lost.', tags: ['undo','reset','danger'] },
+      { code: 'git reset --hard HEAD', desc: 'Discard all uncommitted changes (staged and unstaged). Destructive.', tags: ['undo','reset','danger'] },
+      { code: 'git reset --hard origin/main', desc: 'Reset local branch to exactly match the remote — throws away local commits.', tags: ['undo','reset','danger'] },
+      { code: 'git clean -fd', desc: 'Remove all untracked files and directories. Cannot be undone.', tags: ['undo','clean','danger'] },
+      { code: 'git clean -n', desc: 'Dry run — show what clean would delete without actually deleting.', tags: ['clean','safe'] },
+      { code: 'git clean -fdx', desc: 'Remove untracked files AND ignored files. Useful for fresh builds.', tags: ['clean','danger'] },
+      { code: 'git restore file.txt', desc: 'Discard changes to a file in the working directory.', tags: ['undo','daily'] },
+      { code: 'git restore --staged file.txt', desc: 'Unstage a file (move from index back to working directory).', tags: ['undo','stage'] },
+      { code: 'git restore --source=HEAD~2 file.txt', desc: 'Restore a file to its state from 2 commits ago.', tags: ['undo','advanced'] },
+      { code: 'git reflog', desc: 'Show the reflog — a history of every place HEAD has pointed. Lifesaver for undoing mistakes.', tags: ['undo','reflog','recovery'] },
+      { code: 'git reflog show main', desc: 'Show reflog for a specific branch.', tags: ['undo','reflog'] },
+      { code: 'git reset --hard HEAD@{3}', desc: 'Reset to a specific reflog entry (use git reflog to find the right index).', tags: ['undo','reflog','recovery'] },
+    ]
+  },
+  {
+    id: 'rebase',
+    title: 'Rebase & Cherry-pick',
+    cmds: [
+      { code: 'git rebase main', desc: 'Rebase the current branch onto main — replays commits on top of main.', tags: ['rebase'] },
+      { code: 'git rebase -i HEAD~3', desc: 'Interactive rebase of the last 3 commits — reorder, squash, edit, or drop.', tags: ['rebase','interactive'] },
+      { code: 'git rebase -i --root', desc: 'Interactive rebase from the very first commit.', tags: ['rebase','interactive'] },
+      { code: 'git rebase --onto main feature base', desc: 'Replay commits from base..feature onto main.', tags: ['rebase','advanced'] },
+      { code: 'git rebase --continue', desc: 'Continue a rebase after resolving conflicts.', tags: ['rebase','conflict'] },
+      { code: 'git rebase --skip', desc: 'Skip the current conflicting commit and continue.', tags: ['rebase','conflict'] },
+      { code: 'git rebase --abort', desc: 'Abort an in-progress rebase and return to the original state.', tags: ['rebase','undo'] },
+      { code: 'git cherry-pick abc1234', desc: 'Apply the changes from a specific commit onto the current branch.', tags: ['cherry-pick'] },
+      { code: 'git cherry-pick abc1234 def5678', desc: 'Cherry-pick multiple specific commits.', tags: ['cherry-pick'] },
+      { code: 'git cherry-pick abc1234..def5678', desc: 'Cherry-pick a range of commits (exclusive of start, inclusive of end).', tags: ['cherry-pick'] },
+      { code: 'git cherry-pick --no-commit abc1234', desc: 'Apply changes from a commit but do not auto-commit — stage only.', tags: ['cherry-pick'] },
+      { code: 'git cherry-pick --abort', desc: 'Abort a cherry-pick in progress.', tags: ['cherry-pick','undo'] },
+    ]
+  },
+  {
+    id: 'stash',
+    title: 'Stash',
+    cmds: [
+      { code: 'git stash', desc: 'Save all uncommitted changes (tracked files) to a temporary stash stack.', tags: ['stash','daily'] },
+      { code: 'git stash push -m "work in progress"', desc: 'Stash with a descriptive message.', tags: ['stash'] },
+      { code: 'git stash -u', desc: 'Stash including untracked (new) files.', tags: ['stash'] },
+      { code: 'git stash -a', desc: 'Stash everything including ignored files.', tags: ['stash'] },
+      { code: 'git stash list', desc: 'List all stashed entries.', tags: ['stash','inspect'] },
+      { code: 'git stash show', desc: 'Show the files changed in the most recent stash.', tags: ['stash','inspect'] },
+      { code: 'git stash show -p', desc: 'Show the full diff of the most recent stash.', tags: ['stash','inspect'] },
+      { code: 'git stash pop', desc: 'Apply the most recent stash and remove it from the stack.', tags: ['stash','daily'] },
+      { code: 'git stash apply', desc: 'Apply the most recent stash but keep it in the stack.', tags: ['stash'] },
+      { code: 'git stash apply stash@{2}', desc: 'Apply a specific stash by index.', tags: ['stash'] },
+      { code: 'git stash drop stash@{0}', desc: 'Delete a specific stash entry.', tags: ['stash','delete'] },
+      { code: 'git stash clear', desc: 'Delete ALL stash entries permanently.', tags: ['stash','delete','danger'] },
+      { code: 'git stash branch feature/wip', desc: 'Create a new branch from a stash and apply it there.', tags: ['stash','branch'] },
+    ]
+  },
+  {
+    id: 'tag',
+    title: 'Tags',
+    cmds: [
+      { code: 'git tag', desc: 'List all tags in the repository.', tags: ['tags'] },
+      { code: 'git tag v1.0.0', desc: 'Create a lightweight tag at the current HEAD.', tags: ['tags','create'] },
+      { code: 'git tag -a v1.0.0 -m "Release 1.0.0"', desc: 'Create an annotated tag (includes tagger name, date, and message).', tags: ['tags','create'] },
+      { code: 'git tag -a v1.0.0 abc1234 -m "message"', desc: 'Tag a specific commit by hash.', tags: ['tags','create'] },
+      { code: 'git tag -d v1.0.0', desc: 'Delete a local tag.', tags: ['tags','delete'] },
+      { code: 'git push origin v1.0.0', desc: 'Push a specific tag to the remote.', tags: ['tags','remote'] },
+      { code: 'git push origin --tags', desc: 'Push all local tags to the remote.', tags: ['tags','remote'] },
+      { code: 'git push origin --delete v1.0.0', desc: 'Delete a tag from the remote.', tags: ['tags','remote','delete'] },
+      { code: 'git checkout v1.0.0', desc: 'Check out a tag (detached HEAD state — no branch).', tags: ['tags','checkout'] },
+      { code: 'git tag -l "v1.*"', desc: 'List all tags matching a wildcard pattern.', tags: ['tags','filter'] },
+    ]
+  },
+  {
+    id: 'submodule',
+    title: 'Submodules',
+    cmds: [
+      { code: 'git submodule add https://github.com/user/lib.git libs/lib', desc: 'Add a repository as a submodule at the given path.', tags: ['submodule','add'] },
+      { code: 'git submodule init', desc: 'Initialise submodules after cloning (registers them from .gitmodules).', tags: ['submodule','init'] },
+      { code: 'git submodule update', desc: 'Fetch and checkout the recorded commit for each submodule.', tags: ['submodule','update'] },
+      { code: 'git submodule update --init', desc: 'Initialise and update all submodules in one command.', tags: ['submodule','update'] },
+      { code: 'git submodule update --init --recursive', desc: 'Initialise and update all submodules, including nested ones.', tags: ['submodule','update'] },
+      { code: 'git submodule update --remote', desc: 'Update submodules to the latest commit on their remote tracking branch.', tags: ['submodule','update'] },
+      { code: 'git submodule status', desc: 'Show the current state of each submodule.', tags: ['submodule','inspect'] },
+      { code: 'git submodule foreach git pull origin main', desc: 'Run a Git command in every submodule.', tags: ['submodule','advanced'] },
+      { code: 'git submodule deinit libs/lib', desc: 'Unregister a submodule (does not delete files).', tags: ['submodule','remove'] },
+      { code: 'git rm libs/lib', desc: 'Remove a submodule from the index and .gitmodules (after deinit).', tags: ['submodule','remove'] },
+    ]
+  },
+  {
+    id: 'advanced',
+    title: 'Advanced & Maintenance',
+    cmds: [
+      { code: 'git bisect start', desc: 'Start a binary search to find the commit that introduced a bug.', tags: ['bisect','debug'] },
+      { code: 'git bisect bad', desc: 'Mark the current commit as "bad" (contains the bug).', tags: ['bisect'] },
+      { code: 'git bisect good v1.0.0', desc: 'Mark a known-good commit or tag as the starting point.', tags: ['bisect'] },
+      { code: 'git bisect reset', desc: 'End the bisect session and return to the original branch.', tags: ['bisect'] },
+      { code: 'git worktree add ../hotfix hotfix-branch', desc: 'Check out a branch into a separate directory — work on two branches simultaneously.', tags: ['worktree'] },
+      { code: 'git worktree list', desc: 'List all linked working trees.', tags: ['worktree','inspect'] },
+      { code: 'git worktree remove ../hotfix', desc: 'Remove a linked working tree.', tags: ['worktree','remove'] },
+      { code: 'git gc', desc: 'Run garbage collection — pack loose objects and prune expired refs.', tags: ['maintenance'] },
+      { code: 'git gc --aggressive', desc: 'More thorough (but slower) garbage collection.', tags: ['maintenance'] },
+      { code: 'git fsck', desc: 'Verify the integrity of the Git object database.', tags: ['maintenance','inspect'] },
+      { code: 'git prune', desc: 'Remove unreachable objects from the object database.', tags: ['maintenance','clean'] },
+      { code: 'git pack-refs --all', desc: 'Pack all loose refs into the packed-refs file.', tags: ['maintenance'] },
+      { code: 'git archive --format=zip HEAD > repo.zip', desc: 'Export the current HEAD as a zip archive (no .git folder).', tags: ['export'] },
+      { code: 'git archive --format=tar.gz HEAD | gzip > repo.tar.gz', desc: 'Export as a compressed tarball.', tags: ['export'] },
+      { code: 'git bundle create repo.bundle --all', desc: 'Bundle the entire repo into a single portable file for transfer.', tags: ['bundle','backup'] },
+      { code: 'git bundle unbundle repo.bundle', desc: 'Verify and extract data from a bundle file.', tags: ['bundle'] },
+      { code: 'git apply patch.diff', desc: 'Apply a patch file created with git diff to the working tree.', tags: ['patch'] },
+      { code: 'git format-patch HEAD~3', desc: 'Generate patch files (one per commit) for the last 3 commits.', tags: ['patch'] },
+      { code: 'git am < patches/*.patch', desc: 'Apply a series of patch files as commits.', tags: ['patch'] },
+      { code: 'git notes add -m "Reviewed"', desc: 'Attach a note to the current HEAD commit.', tags: ['notes'] },
+      { code: 'git filter-branch --env-filter', desc: 'Rewrite history — change commit metadata. Use git-filter-repo for large repos instead.', tags: ['advanced','history','danger'] },
+      { code: 'git rerere', desc: 'Record and replay conflict resolutions (reuse recorded resolution).', tags: ['advanced','conflict'] },
+      { code: 'git shortlog -sne', desc: 'Show commit counts grouped by author with emails.', tags: ['stats'] },
+      { code: 'git rev-parse HEAD', desc: 'Print the full SHA hash of HEAD or any ref.', tags: ['advanced','inspect'] },
+      { code: 'git rev-list --count HEAD', desc: 'Count the total number of commits in the history.', tags: ['advanced','inspect'] },
+    ]
+  },
+  {
+    id: 'bash',
+    title: 'Bash Shell Extras (Git Bash on Windows)',
+    cmds: [
+      { code: 'pwd', desc: 'Print Working Directory — show the current folder path.', tags: ['bash','navigation'] },
+      { code: 'ls', desc: 'List files in the current directory.', tags: ['bash','navigation'] },
+      { code: 'ls -la', desc: 'List all files (including hidden) with permissions, size, and dates.', tags: ['bash','navigation'] },
+      { code: 'cd /c/Users/you/projects', desc: 'Change directory. In Git Bash, Windows drives are mounted as /c/, /d/, etc.', tags: ['bash','navigation'] },
+      { code: 'cd ~', desc: 'Navigate to your home directory.', tags: ['bash','navigation'] },
+      { code: 'cd -', desc: 'Go back to the previous directory.', tags: ['bash','navigation'] },
+      { code: 'mkdir my-project', desc: 'Create a new directory.', tags: ['bash','files'] },
+      { code: 'mkdir -p path/to/nested/dir', desc: 'Create a directory and all intermediate parent directories.', tags: ['bash','files'] },
+      { code: 'touch file.txt', desc: 'Create an empty file or update a file\'s timestamp.', tags: ['bash','files'] },
+      { code: 'cat file.txt', desc: 'Print the contents of a file to the terminal.', tags: ['bash','files'] },
+      { code: 'cp source.txt dest.txt', desc: 'Copy a file.', tags: ['bash','files'] },
+      { code: 'mv old.txt new.txt', desc: 'Move or rename a file.', tags: ['bash','files'] },
+      { code: 'rm file.txt', desc: 'Delete a file (no recycle bin — permanent).', tags: ['bash','files','danger'] },
+      { code: 'rm -rf folder/', desc: 'Recursively force-delete a folder and all its contents.', tags: ['bash','files','danger'] },
+      { code: 'echo "# Title" > README.md', desc: 'Write text to a file (overwrites existing content).', tags: ['bash','files'] },
+      { code: 'echo "line" >> README.md', desc: 'Append text to a file without overwriting.', tags: ['bash','files'] },
+      { code: 'grep -r "TODO" .', desc: 'Recursively search for the text "TODO" in all files.', tags: ['bash','search'] },
+      { code: 'find . -name "*.log"', desc: 'Find all .log files starting from the current directory.', tags: ['bash','search'] },
+      { code: 'find . -name "*.log" -delete', desc: 'Find and delete all .log files.', tags: ['bash','search','danger'] },
+      { code: 'ssh-keygen -t ed25519 -C "you@example.com"', desc: 'Generate a new SSH key pair (Ed25519 is recommended).', tags: ['bash','ssh'] },
+      { code: 'cat ~/.ssh/id_ed25519.pub', desc: 'Print your public SSH key — paste this into GitHub/GitLab.', tags: ['bash','ssh'] },
+      { code: 'ssh-agent bash && ssh-add ~/.ssh/id_ed25519', desc: 'Start the SSH agent and add your private key for the session.', tags: ['bash','ssh'] },
+      { code: 'ssh -T git@github.com', desc: 'Test your SSH connection to GitHub.', tags: ['bash','ssh'] },
+      { code: 'eval $(ssh-agent -s)', desc: 'Start the SSH agent in the current shell session.', tags: ['bash','ssh'] },
+      { code: 'history', desc: 'Show command history for the current Bash session.', tags: ['bash','utility'] },
+      { code: 'history | grep git', desc: 'Search your command history for git commands.', tags: ['bash','utility'] },
+      { code: 'clear', desc: 'Clear the terminal screen.', tags: ['bash','utility'] },
+      { code: 'which git', desc: 'Show the path to the git executable being used.', tags: ['bash','utility'] },
+      { code: 'alias gs="git status"', desc: 'Create a temporary shell alias for the current session.', tags: ['bash','alias'] },
+      { code: 'export PATH=$PATH:/c/custom/bin', desc: 'Add a directory to the PATH for the current session.', tags: ['bash','env'] },
+      { code: 'env | grep GIT', desc: 'List all environment variables containing GIT.', tags: ['bash','env'] },
+    ]
+  },
+];
+
+// ── Render ──
+let activeSection = 'all';
+
+function highlight(text) {
+  const parts = text.split(' ');
+  return parts.map((p, i) => {
+    if (i === 0 && p === 'git') return `<span class="git-kw">git</span>`;
+    if (i === 1 && p.match(/^[a-z\-]+$/)) return `<span class="cmd-kw">${p}</span>`;
+    if (p.startsWith('--') || p.startsWith('-')) return `<span class="flag">${p}</span>`;
+    if (p.match(/^(HEAD|HEAD~\d+|main|master|origin|feature\/\w+|abc\d+|def\d+)$/)) return `<span class="arg">${p}</span>`;
+    if (p.match(/^".*"$/) || p.match(/^'.*'$/)) return `<span class="val">${p}</span>`;
+    return p;
+  }).join(' ');
+}
+
+function tagClass(t) {
+  const map = { config:'b', global:'b', clone:'g', remote:'b', stage:'g', commit:'r', branch:'p', merge:'p', log:'o', inspect:'o', undo:'r', reset:'r', danger:'r', rebase:'p', stash:'o', tags:'g', submodule:'b', bash:'o', ssh:'b', maintenance:'o', advanced:'p' };
+  for (const k of Object.keys(map)) { if (t.includes(k)) return map[k]; }
+  return 'b';
+}
+
+function renderAll() {
+  const main = document.getElementById('main');
+  let total = 0;
+  main.innerHTML = sections.map((sec, si) => {
+    total += sec.cmds.length;
+    return `
+    <div class="cmd-section" id="sec-${sec.id}" data-section="${sec.id}">
+      <div class="section-header">
+        <span class="section-num">${String(si+1).padStart(2,'0')}</span>
+        <span class="section-title">${sec.title}</span>
+        <span class="section-count">${sec.cmds.length} commands</span>
+      </div>
+      <div class="cmd-grid">
+        ${sec.cmds.map((cmd, ci) => `
+          <div class="cmd-card" data-section="${sec.id}" data-idx="${si}-${ci}" data-search="${(cmd.code+' '+cmd.desc+' '+cmd.tags.join(' ')).toLowerCase()}">
+            <div class="cmd-top">
+              <div class="cmd-code">${highlight(cmd.code)}</div>
+              <button class="copy-btn" onclick="copyCmd(this,'${cmd.code.replace(/'/g,"\\'")}')">copy</button>
+            </div>
+            <div class="cmd-desc">${cmd.desc}</div>
+            <div class="cmd-tags">${cmd.tags.map(t=>`<span class="tag tag-${tagClass(t)}">${t}</span>`).join('')}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('totalCount').textContent = total;
+  document.getElementById('resCnt').textContent = total + ' commands';
+}
+
+function filterSection(btn, id) {
+  activeSection = id;
+  document.querySelectorAll('.tb-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.cmd-section').forEach(s => {
+    s.classList.toggle('hidden', id !== 'all' && s.dataset.section !== id);
+  });
+  doSearch();
+}
+
+function doSearch() {
+  const q = document.getElementById('search').value.toLowerCase().trim();
+  let visible = 0;
+  document.querySelectorAll('.cmd-card').forEach(card => {
+    const secMatch = activeSection === 'all' || card.dataset.section === activeSection;
+    const textMatch = !q || card.dataset.search.includes(q);
+    const show = secMatch && textMatch;
+    card.classList.toggle('hidden', !show);
+    if (show) visible++;
+  });
+  // Hide empty sections
+  document.querySelectorAll('.cmd-section').forEach(sec => {
+    if (activeSection !== 'all' && sec.dataset.section !== activeSection) return;
+    const anyVisible = sec.querySelectorAll('.cmd-card:not(.hidden)').length > 0;
+    sec.classList.toggle('hidden', !anyVisible);
+  });
+  const noR = document.getElementById('noResults');
+  noR.style.display = visible === 0 ? 'block' : 'none';
+  document.getElementById('resCnt').textContent = visible + ' commands';
+}
+
+function copyCmd(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'copied!';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('ok'); }, 1800);
+  });
+}
+
+// ── Scroll ──
+window.addEventListener('scroll', () => {
+  const p = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+  document.getElementById('prog').style.width = (p * 100) + '%';
+  const btt = document.getElementById('btt');
+  window.scrollY > 400 ? btt.classList.add('show') : btt.classList.remove('show');
+  // active nav
+  const sections = document.querySelectorAll('.cmd-section:not(.hidden)');
+  let cur = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 140) cur = s.dataset.section; });
+  document.querySelectorAll('.tb-btn').forEach(b => {
+    const fn = b.getAttribute('onclick');
+    if (!fn) return;
+    const m = fn.match(/'([^']+)'\)/);
+    if (m && m[1] === cur && activeSection === 'all') b.classList.add('active');
+    else if (activeSection !== 'all') {}
+    else b.classList.remove('active');
+  });
+});
+
+renderAll();
+</script>
+</body>
+</html>
