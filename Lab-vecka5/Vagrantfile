@@ -1,0 +1,27 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# vagrant/Vagrantfile
+
+CONTROL_IP = "192.168.56.10"
+ANSIBLE_REPO = "git@github.com:Asalott/test-repo.git"
+
+Vagrant.configure("2") do |config|
+
+config.vm.box = "ubuntu/jammy64"
+
+  config.vm.define "control" do |ctrl|
+    ctrl.vm.hostname = "control"
+    ctrl.vm.network "private_network", ip: CONTROL_IP
+    ctrl.vm.provider "virtualbox" do |vb|
+      vb.memory = 1024
+      vb.cpus = 1
+    end
+    ctrl.vm.provision "shell", inline: <<-SHELL
+      export DEBIAN_FRONTEND=noninteractive
+      apt-get update -y
+      apt-get install -y ansible git
+      echo "=== Control node redo ==="
+      SHELL
+  end
+end
