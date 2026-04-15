@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ansible Best Practices</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap');
+
+  :root {
+    --bg:      #0a0e17;
+    --surf:    #111827;
+    --surf2:   #1a2235;
+    --border:  #1e2d45;
+    --text:    #cdd6f4;
+    --muted:   #6b7a99;
+    --blue:    #89b4fa;
+    --green:   #a6e3a1;
+    --yellow:  #f9e2af;
+    --orange:  #fab387;
+    --purple:  #cba6f7;
+    --red:     #f38ba8;
+    --teal:    #94e2d5;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .topbar {
+    background: var(--surf);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+  }
+  .dots { display: flex; gap: 6px; }
+  .dot  { width: 11px; height: 11px; border-radius: 50%; }
+  .dot-r { background: #f38ba8; }
+  .dot-y { background: #f9e2af; }
+  .dot-g { background: #a6e3a1; }
+  .topbar-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--blue);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .topbar-sub {
+    margin-left: auto;
+    font-size: 0.62rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 290px 1fr;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .sidebar {
+    background: var(--surf);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 12px 0 24px;
+    cursor: pointer;
+  }
+  .s-section {
+    padding: 10px 14px 3px;
+    font-size: 0.58rem;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .tree-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 14px;
+    font-size: 0.71rem;
+    color: var(--text);
+    border-left: 2px solid transparent;
+    transition: background 0.1s;
+    user-select: none;
+  }
+  .tree-item:hover { background: var(--surf2); }
+  .tree-item.active {
+    background: rgba(137,180,250,0.09);
+    border-left-color: var(--blue);
+    color: var(--blue);
+  }
+  .tname { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ico   { font-size: 0.82rem; flex-shrink: 0; }
+  .i1 { padding-left: 24px; }
+  .i2 { padding-left: 38px; }
+  .i3 { padding-left: 52px; }
+
+  .badge {
+    font-size: 0.52rem;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+  }
+  .b-inv  { background: rgba(166,227,161,.15); color: var(--green); }
+  .b-vars { background: rgba(203,166,247,.15); color: var(--purple); }
+  .b-role { background: rgba(137,180,250,.15); color: var(--blue); }
+  .b-play { background: rgba(249,226,175,.15); color: var(--yellow); }
+  .b-sec  { background: rgba(243,139,168,.15); color: var(--red); }
+  .b-test { background: rgba(148,226,213,.15); color: var(--teal); }
+  .b-ci   { background: rgba(250,179,135,.15); color: var(--orange); }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .tabs {
+    background: var(--surf);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    padding: 0 16px;
+    gap: 2px;
+    overflow-x: auto;
+    flex-shrink: 0;
+    min-height: 40px;
+    align-items: flex-end;
+  }
+  .tab {
+    padding: 7px 14px;
+    font-size: 0.66rem;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color .12s, border-color .12s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+  .body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 26px 30px;
+  }
+
+  .welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 14px;
+    text-align: center;
+    color: var(--muted);
+  }
+  .welcome .big { font-size: 2.8rem; }
+  .welcome h2   { font-family: 'Syne', sans-serif; font-size: 0.95rem; color: var(--text); }
+  .welcome p    { font-size: 0.71rem; line-height: 1.75; max-width: 320px; }
+
+  .filepath { font-size: 0.68rem; color: var(--muted); margin-bottom: 18px; }
+  .filepath span { color: var(--blue); }
+
+  .sec-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.82rem;
+    color: var(--text);
+    margin-bottom: 12px;
+    padding-bottom: 7px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .purpose {
+    background: var(--surf);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: 0 7px 7px 0;
+    padding: 13px 17px;
+    margin-bottom: 18px;
+    font-size: 0.71rem;
+    line-height: 1.8;
+    color: var(--muted);
+  }
+  .purpose strong { color: var(--text); }
+  .purpose .why {
+    display: block;
+    font-size: 0.57rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 6px;
+  }
+
+  .code-block {
+    background: var(--surf);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
+  .code-head {
+    background: var(--surf2);
+    padding: 7px 15px;
+    font-size: 0.61rem;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+  }
+  .code-head .lang { color: var(--yellow); font-weight: 700; }
+
+  pre {
+    padding: 16px 18px;
+    font-size: 0.7rem;
+    line-height: 1.8;
+    overflow-x: auto;
+    color: var(--text);
+    white-space: pre;
+  }
+
+  .sc  { color: #585b70; font-style: italic; }
+  .sk  { color: #89b4fa; }
+  .sv  { color: #a6e3a1; }
+  .sva { color: #f9e2af; }
+  .ss  { color: #cba6f7; font-weight: 600; }
+  .st  { color: #f38ba8; }
+  .sb  { color: #89dceb; }
+  .sn  { color: #fab387; }
+  .sf  { color: #e3b341; font-weight: 600; }
+  .sfi { color: #89b4fa; }
+  .sfg { color: #a6e3a1; }
+  .sfp { color: #cba6f7; }
+  .sfr { color: #f38ba8; }
+  .sfo { color: #fab387; }
+  .sfa { color: #585b70; font-style: italic; }
+
+  .bp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 11px;
+    margin-top: 18px;
+  }
+  .bp-card {
+    background: var(--surf);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 13px;
+    font-size: 0.67rem;
+    line-height: 1.6;
+  }
+  .bpt {
+    color: var(--yellow);
+    font-weight: 700;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 5px;
+  }
+  .bp-card p { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="dots">
+    <div class="dot dot-r"></div>
+    <div class="dot dot-y"></div>
+    <div class="dot dot-g"></div>
+  </div>
+  <div class="topbar-title">Ansible Best Practices</div>
+  <div class="topbar-sub">2.10+ &middot; Production Structure</div>
+</div>
+
+<div class="layout">
+
+  <div class="sidebar" id="sidebar">
+    <div class="s-section">Project Root</div>
+    <div class="tree-item" data-key="root"><span class="ico">&#x1F4C1;</span><span class="tname">ansible-project/</span></div>
+    <div class="tree-item i1" data-key="cfg"><span class="ico">&#x2699;</span><span class="tname">ansible.cfg</span><span class="badge b-play">CONFIG</span></div>
+    <div class="tree-item i1" data-key="requirements"><span class="ico">&#x1F4C4;</span><span class="tname">requirements.yml</span><span class="badge b-ci">DEPS</span></div>
+    <div class="tree-item i1" data-key="site"><span class="ico">&#x1F4C4;</span><span class="tname">site.yml</span><span class="badge b-play">ENTRY</span></div>
+    <div class="tree-item i1" data-key="webbook"><span class="ico">&#x1F4C4;</span><span class="tname">webservers.yml</span><span class="badge b-play">PLAY</span></div>
+    <div class="tree-item i1" data-key="dbbook"><span class="ico">&#x1F4C4;</span><span class="tname">dbservers.yml</span><span class="badge b-play">PLAY</span></div>
+
+    <div class="s-section">Inventory</div>
+    <div class="tree-item i1" data-key="prodhosts"><span class="ico">&#x1F4C1;</span><span class="tname">inventory/production/</span><span class="badge b-inv">ENV</span></div>
+    <div class="tree-item i2" data-key="prodhosts"><span class="ico">&#x1F4C4;</span><span class="tname">hosts.ini</span></div>
+    <div class="tree-item i1" data-key="staginghosts"><span class="ico">&#x1F4C1;</span><span class="tname">inventory/staging/</span><span class="badge b-inv">ENV</span></div>
+    <div class="tree-item i2" data-key="staginghosts"><span class="ico">&#x1F4C4;</span><span class="tname">hosts.ini</span></div>
+
+    <div class="s-section">Variables</div>
+    <div class="tree-item i1" data-key="allvars"><span class="ico">&#x1F4C4;</span><span class="tname">group_vars/all.yml</span><span class="badge b-vars">VARS</span></div>
+    <div class="tree-item i1" data-key="webvars"><span class="ico">&#x1F4C4;</span><span class="tname">group_vars/webservers.yml</span><span class="badge b-vars">VARS</span></div>
+    <div class="tree-item i1" data-key="dbvars"><span class="ico">&#x1F4C4;</span><span class="tname">group_vars/dbservers.yml</span><span class="badge b-vars">VARS</span></div>
+    <div class="tree-item i1" data-key="hostvars"><span class="ico">&#x1F4C4;</span><span class="tname">host_vars/db01.yml</span><span class="badge b-vars">HOST</span></div>
+
+    <div class="s-section">Roles &mdash; common</div>
+    <div class="tree-item i1" data-key="commontasks"><span class="ico">&#x1F4C4;</span><span class="tname">roles/common/tasks/main.yml</span><span class="badge b-role">ROLE</span></div>
+    <div class="tree-item i1" data-key="commondefaults"><span class="ico">&#x1F4C4;</span><span class="tname">roles/common/defaults/main.yml</span><span class="badge b-role">ROLE</span></div>
+    <div class="tree-item i1" data-key="commonhandlers"><span class="ico">&#x1F4C4;</span><span class="tname">roles/common/handlers/main.yml</span><span class="badge b-role">ROLE</span></div>
+    <div class="tree-item i1" data-key="commontemplates"><span class="ico">&#x1F4C4;</span><span class="tname">roles/common/templates/ntp.conf.j2</span><span class="badge b-role">ROLE</span></div>
+    <div class="tree-item i1" data-key="commonmeta"><span class="ico">&#x1F4C4;</span><span class="tname">roles/common/meta/main.yml</span><span class="badge b-role">ROLE</span></div>
+
+    <div class="s-section">Roles &mdash; dbserver</div>
+    <div class="tree-item i1" data-key="dbtasks"><span class="ico">&#x1F4C4;</span><span class="tname">roles/dbserver/tasks/main.yml</span><span class="badge b-role">ROLE</span></div>
+    <div class="tree-item i1" data-key="dbvault"><span class="ico">&#x1F512;</span><span class="tname">roles/dbserver/vars/vault.yml</span><span class="badge b-sec">VAULT</span></div>
+
+    <div class="s-section">Security</div>
+    <div class="tree-item i1" data-key="vaultprod"><span class="ico">&#x1F512;</span><span class="tname">vault/production.yml</span><span class="badge b-sec">ENCRYPTED</span></div>
+    <div class="tree-item i1" data-key="vaultpass"><span class="ico">&#x1F4C4;</span><span class="tname">vault/.vault_pass</span><span class="badge b-sec">SECRET</span></div>
+
+    <div class="s-section">Testing &amp; CI</div>
+    <div class="tree-item i1" data-key="molecule"><span class="ico">&#x1F4C4;</span><span class="tname">molecule/default/molecule.yml</span><span class="badge b-test">TEST</span></div>
+    <div class="tree-item i1" data-key="ci"><span class="ico">&#x1F4C4;</span><span class="tname">.github/workflows/ci.yml</span><span class="badge b-ci">CI</span></div>
+    <div class="tree-item i1" data-key="gitignore"><span class="ico">&#x1F4C4;</span><span class="tname">.gitignore</span></div>
+    <div class="tree-item i1" data-key="readme"><span class="ico">&#x1F4C4;</span><span class="tname">README.md</span></div>
+  </div>
+
+  <div class="content">
+    <div class="tabs" id="tabs"></div>
+    <div class="body" id="body">
+      <div class="welcome">
+        <div class="big">&#x2699;</div>
+        <h2>Ansible Best Practices Explorer</h2>
+        <p>Click any file or folder in the tree to see its contents and why it follows best practices.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var openTabs = [];
+  var activeTab = null;
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+
+  var overviewLines = [
+    ['sf','ansible-project/'],
+    ['',''],
+    ['','\u251C\u2500\u2500 '],['sfi','ansible.cfg'],['sfa','              \u2190 global config, auto-loaded'],
+    ['','\u251C\u2500\u2500 '],['sfi','requirements.yml'],['sfa','         \u2190 galaxy collections + roles'],
+    ['','\u251C\u2500\u2500 '],['sfi','site.yml'],['sfa','                 \u2190 main entry point'],
+    ['','\u251C\u2500\u2500 '],['sfi','webservers.yml'],['sfa','           \u2190 web-only playbook'],
+    ['','\u251C\u2500\u2500 '],['sfi','dbservers.yml'],['sfa','            \u2190 db-only playbook'],
+    ['',''],
+    ['','\u251C\u2500\u2500 '],['sf','inventory/'],
+    ['','  \u251C\u2500\u2500 '],['sf','production/'],
+    ['','  \u2502   \u2514\u2500\u2500 '],['sfg','hosts.ini'],['sfa','           \u2190 prod IPs + groups'],
+    ['','  \u2514\u2500\u2500 '],['sf','staging/'],
+    ['','      \u2514\u2500\u2500 '],['sfg','hosts.ini'],['sfa','           \u2190 staging IPs + groups'],
+    ['',''],
+    ['','\u251C\u2500\u2500 '],['sf','group_vars/'],['sfa','              \u2190 auto-loaded per group'],
+    ['','  \u251C\u2500\u2500 '],['sfp','all.yml'],
+    ['','  \u251C\u2500\u2500 '],['sfp','webservers.yml'],
+    ['','  \u2514\u2500\u2500 '],['sfp','dbservers.yml'],
+    ['',''],
+    ['','\u251C\u2500\u2500 '],['sf','host_vars/'],['sfa','               \u2190 per-host overrides'],
+    ['','  \u2514\u2500\u2500 '],['sfp','db01.yml'],
+    ['',''],
+    ['','\u251C\u2500\u2500 '],['sf','roles/'],
+    ['','  \u251C\u2500\u2500 '],['sf','common/'],
+    ['','  \u2502   \u251C\u2500\u2500 '],['sfi','tasks/main.yml'],
+    ['','  \u2502   \u251C\u2500\u2500 '],['sfi','defaults/main.yml'],['sfa','    \u2190 lowest priority vars'],
+    ['','  \u2502   \u251C\u2500\u2500 '],['sfi','handlers/main.yml'],['sfa','    \u2190 triggered by notify:'],
+    ['','  \u2502   \u251C\u2500\u2500 '],['sfi','templates/ntp.conf.j2'],['sfa','\u2190 jinja2 templates'],
+    ['','  \u2502   \u2514\u2500\u2500 '],['sfi','meta/main.yml'],['sfa','        \u2190 role dependencies'],
+    ['','  \u2514\u2500\u2500 '],['sf','dbserver/'],
+    ['','      \u251C\u2500\u2500 '],['sfi','tasks/main.yml'],
+    ['','      \u2514\u2500\u2500 '],['sfr','vars/vault.yml'],['sfa','       \u2190 encrypted secrets'],
+    ['',''],
+    ['','\u251C\u2500\u2500 '],['sf','vault/'],['sfa','                   \u2190 project-wide secrets'],
+    ['','  \u251C\u2500\u2500 '],['sfr','production.yml'],['sfa','         \u2190 ansible-vault encrypted'],
+    ['','  \u2514\u2500\u2500 '],['sfr','.vault_pass'],['sfa','            \u2190 NEVER commit this'],
+    ['',''],
+    ['','\u251C\u2500\u2500 '],['sf','molecule/'],['sfa','                \u2190 automated role testing'],
+    ['','  \u2514\u2500\u2500 '],['sf','default/'],
+    ['','      \u2514\u2500\u2500 '],['sfo','molecule.yml'],
+    ['',''],
+    ['','\u251C\u2500\u2500 '],['sfo','.github/workflows/ci.yml'],['sfa',' \u2190 lint + test on push'],
+    ['','\u251C\u2500\u2500 '],['sfr','.gitignore'],['sfa','               \u2190 never commit vault_pass'],
+    ['','\u2514\u2500\u2500 '],['sfi','README.md']
+  ];
+
+  var bpCards = [
+    ['Separate Inventories','One hosts.ini per environment. Never mix production and staging.'],
+    ['Roles Over Tasks','Put all logic in roles. Playbooks just assign roles to groups.'],
+    ['Vault for Secrets','Every password goes in ansible-vault. Never plaintext in Git.'],
+    ['FQCN Modules','Use ansible.builtin.apt not just apt. Required best practice in 2.10+.'],
+    ['Pin Versions','requirements.yml pins collection versions for reproducible deploys.'],
+    ['Test with Molecule','Every role should have molecule tests that run in CI before production.']
+  ];
+
+  var files = {
+    root: {
+      label: 'ansible-project/', icon: '&#x1F4C1;',
+      purpose: '<strong>The complete production-grade project layout.</strong> Ansible has an official recommended directory structure. Following it means any Ansible engineer can pick up your project instantly, and tools like Molecule and AWX/Tower expect this exact layout.',
+      isOverview: true
+    },
+    cfg: {
+      label: 'ansible.cfg', icon: '&#x2699;', lang: 'INI',
+      purpose: '<strong>Global config auto-loaded when you run any ansible-playbook command.</strong> Keep it in the project root so settings are project-scoped, not system-wide. Never store credentials here.',
+      code: [
+        ['sc','# ansible.cfg'],['',''],
+        ['ss','[defaults]'],
+        ['sk','inventory           '],['sv','= inventory/production'],
+        ['sk','remote_user         '],['sv','= ansible'],
+        ['sk','private_key_file    '],['sv','= ~/.ssh/id_rsa'],
+        ['sk','host_key_checking   '],['sb','= False'],
+        ['sk','roles_path          '],['sv','= roles'],
+        ['sk','retry_files_enabled '],['sb','= False'],
+        ['sk','stdout_callback     '],['sv','= yaml'],
+        ['sk','vault_password_file '],['sv','= vault/.vault_pass'],
+        ['',''],
+        ['ss','[privilege_escalation]'],
+        ['sk','become        '],['sb','= True'],
+        ['sk','become_method '],['sv','= sudo'],
+        ['sk','become_user   '],['sv','= root'],
+        ['',''],
+        ['ss','[ssh_connection]'],
+        ['sk','pipelining '],['sb','= True'],['sc','  # big speed improvement']
+      ]
+    },
+    requirements: {
+      label: 'requirements.yml', icon: '&#x1F4C4;', lang: 'YAML',
+      purpose: '<strong>Declares all external Galaxy collections and roles your project depends on.</strong> Always pin versions so deployments are reproducible. Run ansible-galaxy install -r requirements.yml to install.',
+      code: [
+        ['sc','---'],
+        ['sc','# ansible-galaxy install -r requirements.yml'],['',''],
+        ['sk','collections:'],
+        ['sv','  - name: community.postgresql'],
+        ['sk','    version: '],['sv','"1.7.0"'],['sc','  # always pin'],
+        ['sv','  - name: community.general'],
+        ['sk','    version: '],['sv','"4.8.0"'],
+        ['sv','  - name: ansible.posix'],
+        ['sk','    version: '],['sv','"1.4.0"'],['',''],
+        ['sk','roles:'],
+        ['sv','  - name: geerlingguy.ntp'],
+        ['sk','    version: '],['sv','"2.1.0"']
+      ]
+    },
+    site: {
+      label: 'site.yml', icon: '&#x1F4C4;', lang: 'YAML',
+      purpose: '<strong>The main entry point — this is where you couple inventory groups to roles.</strong> For small projects (up to ~10 VMs) put everything directly here. The hosts: field maps to group names in hosts.ini, and roles: defines what runs on those hosts. Simple, clear, no unnecessary splitting.',
+      code: [
+        ['sc','---'],
+        ['sc','# Usage: ansible-playbook site.yml'],
+        ['sc','# Limit to one group: ansible-playbook site.yml --limit dbservers'],
+        ['',''],
+        ['sc','# Play 1 — runs on ALL VMs first (base config)'],
+        ['sk','- name: '],['sv','Apply common config to all hosts'],
+        ['sk','  hosts: '],['sv','all'],
+        ['sk','  roles:'],
+        ['sv','    - common'],
+        ['',''],
+        ['sc','# Play 2 — web VM only'],
+        ['sk','- name: '],['sv','Configure web servers'],
+        ['sk','  hosts: '],['sv','webservers'],['sc','  # matches [webservers] in hosts.ini'],
+        ['sk','  roles:'],
+        ['sv','    - webserver'],
+        ['',''],
+        ['sc','# Play 3 — DB VM only'],
+        ['sk','- name: '],['sv','Configure database servers'],
+        ['sk','  hosts: '],['sv','dbservers'],['sc','  # matches [dbservers] in hosts.ini'],
+        ['sk','  roles:'],
+        ['sv','    - dbserver']
+      ]
+    },
+    webbook: {
+      label: 'webservers.yml', icon: '&#x1F4C4;', lang: 'YAML',
+      purpose: '<strong>Note: for small projects (under 10 VMs) you do NOT need this file.</strong> Put everything directly in site.yml instead. This separate file only makes sense when site.yml grows too large to read easily (50+ VMs).',
+      code: [
+        ['sc','# NOT needed for small projects!'],
+        ['sc','# Only split into separate files when site.yml gets too large.'],
+        ['',''],
+        ['sc','# For 5 VMs or fewer — just write directly in site.yml:'],
+        ['',''],
+        ['sk','- name: '],['sv','Configure web servers'],
+        ['sk','  hosts: '],['sv','webservers'],
+        ['sk','  roles:'],
+        ['sv','    - common'],
+        ['sv','    - webserver']
+      ]
+    },
+    dbbook: {
+      label: 'dbservers.yml', icon: '&#x1F4C4;', lang: 'YAML',
+      purpose: '<strong>Note: for small projects (under 10 VMs) you do NOT need this file.</strong> Put everything directly in site.yml instead. This separate file only makes sense when site.yml grows too large to read easily (50+ VMs).',
+      code: [
+        ['sc','# NOT needed for small projects!'],
+        ['sc','# Only split into separate files when site.yml gets too large.'],
+        ['',''],
+        ['sc','# For 5 VMs or fewer — just write directly in site.yml:'],
+        ['',''],
+        ['sk','- name: '],['sv','Configure database servers'],
+        ['sk','  hosts: '],['sv','dbservers'],
+        ['sk','  roles:'],
+        ['sv','    - common'],
+        ['sv','    - dbserver']
+      ]
+    },
+    prodhosts: {
+      label: 'inventory/production/hosts.ini', icon: '&#x1F4C4;', lang: 'INI',
+      purpose: '<strong>Production inventory — real server IPs.</strong> Separate inventories per environment. Never mix prod and staging in the same file.',
+      code: [
+        ['sc','# Production inventory'],['',''],
+        ['ss','[webservers]'],
+        ['sk','web01 '],['sv','ansible_host=10.0.1.10'],
+        ['sk','web02 '],['sv','ansible_host=10.0.1.11'],['sc','  # 2+ for HA'],['',''],
+        ['ss','[dbservers]'],
+        ['sk','db01  '],['sv','ansible_host=10.0.1.20'],['',''],
+        ['ss','[all:vars]'],
+        ['sk','ansible_python_interpreter'],['sv','=/usr/bin/python3'],
+        ['sk','ansible_user'],['sv','=ansible']
+      ]
+    },
+    staginghosts: {
+      label: 'inventory/staging/hosts.ini', icon: '&#x1F4C4;', lang: 'INI',
+      purpose: '<strong>Staging inventory — same group names, different IPs.</strong> The same playbooks work in both environments. Switch with -i inventory/staging.',
+      code: [
+        ['sc','# Staging — same groups, different IPs'],
+        ['sc','# ansible-playbook site.yml -i inventory/staging'],['',''],
+        ['ss','[webservers]'],
+        ['sk','web-stg01 '],['sv','ansible_host=192.168.10.10'],['',''],
+        ['ss','[dbservers]'],
+        ['sk','db-stg01  '],['sv','ansible_host=192.168.10.20'],['',''],
+        ['ss','[all:vars]'],
+        ['sk','env'],['sv','=staging']
+      ]
+    },
+    allvars: {
+      label: 'group_vars/all.yml', icon: '&#x1F4C4;', lang: 'YAML',
+      purpose: '<strong>Variables available to every host.</strong> Only put truly global values here — NTP, DNS, timezone. Keep it lean.',
+      code: [
+        ['sc','---'],
+        ['sk','ntp_servers:'],
+        ['sv','  - 0.se.pool.ntp.org'],
+        ['sv','  - 1.se.pool.ntp.org'],['',''],
+        ['sk','dns_servers:'],
+        ['sv','  - 1.1.1.1'],
+        ['sv','  - 8.8.8.8'],['',''],
+        ['sk','admin_user: '],['sv','ansible'],
+        ['sk','timezone:   '],['sv','Europe/Stockholm']
+      ]
+    },
+    webvars: {
+      label: 'group_vars/webservers.yml', icon: '&#x1F4C4;', lang: 'YAML',
+      purpose: '<strong>Variables only for the webservers group.</strong> Auto-loaded by Ansible for any play targeting webservers.',
+      code: [
+        ['sc','---'],
+        ['sk','http_port:  '],['sn','80'],
+        ['sk','https_port: '],['sn','443'],
+        ['sk','app_root:   '],['sv','/var/www/html'],
+        ['sk','nginx_worker_processes: '],['sv','auto']
+      ]
+    },
+    dbvars: {
+      label: 'group_vars/dbservers.yml', icon: '&#x1F4C4;', lang: 'YAML',
+      purpose: '<strong>Variables only for the dbservers group.</strong> Secrets reference vault variables — never store plaintext passwords here.',
+      code: [
+        ['sc','---'],
+        ['sk','db_port: '],['sn','5432'],
+        ['sk','db_name: '],['sv','appdb'],
+        ['sk','db_user: '],['sv','appuser'],['',''],
+        ['sc','# Reference vault — never plaintext!'],
+        ['sk','db_password: '],['sva','"{{ vault_db_password }}"'],['',''],
+        ['sk','postgres_max_connections: '],['sn','200'],
+        ['sk','postgres_shared_buffers:  '],['sv','256MB']
+      ]
+    },
+    hostvars: {
+      label: 'host_vars/db01.yml', icon: '&#x1F4C4;', lang: 'YAML',
+      purpose: '<strong>Variables for one specific host — highest priority.</strong> Use sparingly, only for host-specific overrides that differ from the group default.',
+      code: [
+        ['sc','---'],
+        ['sc','# host_vars/db01.yml — db01 only'],['',''],
+        ['sk','db_port: '],['sn','5433'],['sc','  # overrides group default'],
+        ['sk','backup_enabled: '],['sb','true']
+      ]
+    },
+    commontasks: {
+      label: 'roles/common/tasks/main.yml', icon: '&#x1F4C4;', lang: 'YAML',
+      purpose: '<strong>Base tasks that run on every VM.</strong> Use FQCN for all modules in 2.10+. Use notify to trigger handlers instead of restarting services inline.',
+      code: [
+        ['sc','---'],
+        ['st','- name: '],['sv','Update apt cache'],
+        ['sk','  ansible.builtin.apt:'],
+        ['sk','    update_cache: '],['sb','yes'],
+        ['sk','    cache_valid_time: '],['sn','3600'],['',''],
+        ['st','- name: '],['sv','Install common packages'],
+        ['sk','  ansible.builtin.package:'],
+        ['sk','    name: '],['sva','"{{ common_packages }}"'],
+        ['sk','    state: '],['sv','present'],['',''],
+        ['st','- name: '],['sv','Deploy NTP config'],
+        ['sk','  ansible.builtin.template:'],
+        ['sk','    src:   '],['sv','ntp.conf.j2'],
+        ['sk','    dest:  '],['sv','/etc/ntp.conf'],
+        ['sk','    mode:  '],['sv',"'0644'"],
+        ['sk','  notify: '],['sv','Restart NTP'],['',''],
+        ['st','- name: '],['sv','Ensure NTP is running'],
+        ['sk','  ansible.builtin.service:'],
+        ['sk','    name:    '],['sv','ntp'],
+        ['sk','    state:   '],['sv','started'],
+        ['sk','    enabled: '],['sb','yes']
+      ]
+    },
+    commondefaults: {
+      label: 'roles/common/defaults/main.yml', icon: '&#x1F4C4;', lang: 'YAML',
+      purpose: '<strong>Default variable values — lowest priority in Ansible variable precedence.</strong> Always define role variables here with safe defaults. Users override them in group_vars without touching the role.',
+      code: [
+        ['sc','---'],
+        ['sc','# lowest priority, easily overridden'],['',''],
+        ['sk','common_packages:'],
+        ['sv','  - curl'],
+        ['sv','  - vim'],
+        ['sv','  - git'],
+        ['sv','  - python3'],
+        ['sv','  - ntp'],
+        ['sv','  - htop'],['',''],
+        ['sk','ntp_service_name: '],['sv','ntp'],
+        ['sk','ntp_config_path:  '],['sv','/etc/ntp.conf']
+      ]
+    },
+    commonhandlers: {
+      label: 'roles/common/handlers/main.yml', icon: '&#x1F4C4;', lang: 'YAML',
+      purpose: '<strong>Handlers run only once at end of play, only when notified.</strong> Use handlers for service restarts so a config change never restarts a service multiple times.',
+      code: [
+        ['sc','---'],
+        ['sc','# fires when notified, runs ONCE at end of play'],['',''],
+        ['st','- name: '],['sv','Restart NTP'],
+        ['sk','  ansible.builtin.service:'],
+        ['sk','    name:  '],['sva','"{{ ntp_service_name }}"'],
+        ['sk','    state: '],['sv','restarted'],['',''],
+        ['st','- name: '],['sv','Reload SSHD'],
+        ['sk','  ansible.builtin.service:'],
+        ['sk','    name:  '],['sv','sshd'],
+        ['sk','    state: '],['sv','reloaded'],['sc','  # reload = no downtime']
+      ]
+    },
+    commontemplates: {
+      label: 'roles/common/templates/ntp.conf.j2', icon: '&#x1F4C4;', lang: 'JINJA2',
+      purpose: '<strong>Jinja2 template — generates config files with variables injected.</strong> Always use templates for config files instead of static files. Variables from group_vars are available automatically.',
+      code: [
+        ['sc','{# ntp.conf.j2 #}'],['',''],
+        ['sv','driftfile /var/lib/ntp/drift'],
+        ['sv','restrict default nomodify notrap nopeer noquery'],['',''],
+        ['sc','{# loop over ntp_servers from group_vars/all.yml #}'],
+        ['sva','{% for server in ntp_servers %}'],
+        ['sv','server '],['sva','{{ server }}'],['sv',' iburst'],
+        ['sva','{% endfor %}'],['',''],
+        ['sc','{# conditional for OS family #}'],
+        ['sva','{% if ansible_os_family == "Debian" %}'],
+        ['sv','leapsmearinterval 3600'],
+        ['sva','{% endif %}']
+      ]
+    },
+    commonmeta: {
+      label: 'roles/common/meta/main.yml', icon: '&#x1F4C4;', lang: 'YAML',
+      purpose: '<strong>Role metadata and dependency declarations.</strong> Always fill in meta/main.yml. Declare dependencies here and Ansible auto-runs them before the role.',
+      code: [
+        ['sc','---'],
+        ['sk','galaxy_info:'],
+        ['sk','  role_name:   '],['sv','common'],
+        ['sk','  author:      '],['sv','yourname'],
+        ['sk','  min_ansible_version: '],['sv','"2.10"'],
+        ['sk','  platforms:'],
+        ['sv','    - name: Ubuntu'],
+        ['sk','      versions: '],['sv','[20.04, 22.04]'],['',''],
+        ['sk','dependencies: '],['sv','[]'],['sc','  # list roles that run first']
+      ]
+    },
+    dbtasks: {
+      label: 'roles/dbserver/tasks/main.yml', icon: '&#x1F4C4;', lang: 'YAML',
+      purpose: '<strong>All DB-specific tasks. The role never mentions a host</strong> — it gets its target from site.yml. Use FQCN modules, reference variables, use become_user for postgres commands.',
+      code: [
+        ['sc','---'],
+        ['st','- name: '],['sv','Install PostgreSQL packages'],
+        ['sk','  ansible.builtin.apt:'],
+        ['sk','    name:'],
+        ['sv','      - postgresql'],
+        ['sv','      - postgresql-contrib'],
+        ['sv','      - python3-psycopg2'],
+        ['sk','    state: '],['sv','present'],['',''],
+        ['st','- name: '],['sv','Ensure PostgreSQL is started'],
+        ['sk','  ansible.builtin.service:'],
+        ['sk','    name:    '],['sv','postgresql'],
+        ['sk','    state:   '],['sv','started'],
+        ['sk','    enabled: '],['sb','yes'],['',''],
+        ['st','- name: '],['sv','Create application database'],
+        ['sk','  community.postgresql.postgresql_db:'],
+        ['sk','    name:  '],['sva','"{{ db_name }}"'],
+        ['sk','    state: '],['sv','present'],
+        ['sk','  become_user: '],['sv','postgres'],['',''],
+        ['st','- name: '],['sv','Create database user'],
+        ['sk','  community.postgresql.postgresql_user:'],
+        ['sk','    name:     '],['sva','"{{ db_user }}"'],
+        ['sk','    password: '],['sva','"{{ db_password }}"'],['sc','  # from vault'],
+        ['sk','    db:       '],['sva','"{{ db_name }}"'],
+        ['sk','    priv:     '],['sv','ALL'],
+        ['sk','    state:    '],['sv','present'],
+        ['sk','  become_user: '],['sv','postgres']
+      ]
+    },
+    dbvault: {
+      label: 'roles/dbserver/vars/vault.yml', icon: '&#x1F512;', lang: 'VAULT',
+      purpose: '<strong>Encrypted secrets — never store plaintext passwords in Git.</strong> Encrypt with ansible-vault. In Git it is ciphertext; Ansible decrypts at runtime using your vault password.',
+      code: [
+        ['sc','# ansible-vault create roles/dbserver/vars/vault.yml'],
+        ['sc','# ansible-vault edit   roles/dbserver/vars/vault.yml'],['',''],
+        ['sc','--- decrypted content ---'],['',''],
+        ['sk','vault_db_password: '],['sv','SuperSecretProdPass!'],['',''],
+        ['sc','--- in Git it looks like ---'],['',''],
+        ['sv','$ANSIBLE_VAULT;1.1;AES256'],
+        ['sv','38646238323937633963396634613836'],
+        ['sv','30333832313233363337623635316539...']
+      ]
+    },
+    vaultprod: {
+      label: 'vault/production.yml', icon: '&#x1F512;', lang: 'VAULT',
+      purpose: '<strong>Project-wide encrypted secrets for production.</strong> Always encrypt the whole file. Nothing sensitive ever exists in plaintext in your repo.',
+      code: [
+        ['sc','# ALWAYS encrypted, NEVER plaintext in git'],
+        ['sc','# ansible-vault encrypt vault/production.yml'],['',''],
+        ['sk','vault_db_password:    '],['sv','ProdDbPass!9x2'],
+        ['sk','vault_api_secret_key: '],['sv','aK92nPqR77mXzL'],
+        ['sk','vault_smtp_password:  '],['sv','MailPass!2024']
+      ]
+    },
+    vaultpass: {
+      label: 'vault/.vault_pass', icon: '&#x1F4C4;', lang: 'TEXT',
+      purpose: '<strong>The password that decrypts your vault files.</strong> NEVER commit to Git. In CI/CD inject as an environment variable. Locally reference from ansible.cfg.',
+      code: [
+        ['sc','# vault/.vault_pass'],
+        ['sc','# Single line — the decryption password'],
+        ['sc','# NEVER commit to Git!'],['',''],
+        ['sv','MyVaultDecryptionPassword123'],['',''],
+        ['sc','# ansible.cfg:'],
+        ['sc','# vault_password_file = vault/.vault_pass'],['',''],
+        ['sc','# CI/CD — use env var instead:'],
+        ['sc','# --vault-password-file $VAULT_PASS_FILE']
+      ]
+    },
+    molecule: {
+      label: 'molecule/default/molecule.yml', icon: '&#x1F4C4;', lang: 'YAML',
+      purpose: '<strong>Molecule is the standard tool for testing Ansible roles.</strong> Spins up a Docker container, runs the role, and verifies the result before anything touches production.',
+      code: [
+        ['sc','---'],
+        ['sc','# Run tests: molecule test'],['',''],
+        ['sk','dependency:'],
+        ['sk','  name: '],['sv','galaxy'],
+        ['sk','  options:'],
+        ['sk','    requirements-file: '],['sv','requirements.yml'],['',''],
+        ['sk','driver:'],
+        ['sk','  name: '],['sv','docker'],['',''],
+        ['sk','platforms:'],
+        ['sv','  - name: instance'],
+        ['sk','    image: '],['sv','ubuntu:22.04'],
+        ['sk','    pre_build_image: '],['sb','true'],['',''],
+        ['sk','provisioner:'],
+        ['sk','  name: '],['sv','ansible'],['',''],
+        ['sk','verifier:'],
+        ['sk','  name: '],['sv','ansible']
+      ]
+    },
+    ci: {
+      label: '.github/workflows/ci.yml', icon: '&#x1F4C4;', lang: 'YAML',
+      purpose: '<strong>GitHub Actions CI — runs ansible-lint and molecule tests on every push.</strong> Broken playbooks never reach production. Catches syntax errors and bad module names early.',
+      code: [
+        ['sc','---'],
+        ['sk','name: '],['sv','Ansible CI'],
+        ['sk','on: '],['sv','[push, pull_request]'],['',''],
+        ['sk','jobs:'],
+        ['sk','  lint:'],
+        ['sk','    runs-on: '],['sv','ubuntu-latest'],
+        ['sk','    steps:'],
+        ['sv','      - uses: actions/checkout@v3'],
+        ['st','      - name: '],['sv','Run ansible-lint'],
+        ['sk','        run: '],['sv','pip install ansible-lint && ansible-lint'],['',''],
+        ['sk','  test:'],
+        ['sk','    runs-on: '],['sv','ubuntu-latest'],
+        ['sk','    steps:'],
+        ['sv','      - uses: actions/checkout@v3'],
+        ['st','      - name: '],['sv','Run molecule tests'],
+        ['sk','        run: '],['sv','molecule test'],
+        ['sk','        env:'],
+        ['sk','          ANSIBLE_VAULT_PASSWORD: '],['sva','${{ secrets.VAULT_PASS }}']
+      ]
+    },
+    gitignore: {
+      label: '.gitignore', icon: '&#x1F4C4;', lang: 'TEXT',
+      purpose: '<strong>Prevents secrets and junk from being committed to Git.</strong> Critical: if .vault_pass ends up in Git, all your secrets are exposed.',
+      code: [
+        ['sc','# NEVER commit secrets'],
+        ['sv','vault/.vault_pass'],
+        ['sv','*.vault_pass'],['',''],
+        ['sc','# Ansible generated'],
+        ['sv','*.retry'],
+        ['sv','.ansible/'],['',''],
+        ['sc','# Python'],
+        ['sv','__pycache__/'],
+        ['sv','*.pyc'],
+        ['sv','.venv/'],['',''],
+        ['sc','# OS'],
+        ['sv','.DS_Store'],
+        ['sv','Thumbs.db']
+      ]
+    },
+    readme: {
+      label: 'README.md', icon: '&#x1F4C4;', lang: 'MARKDOWN',
+      purpose: '<strong>Document how to use the project.</strong> Always include a README so someone new knows how to install dependencies, configure vault, and run playbooks.',
+      code: [
+        ['sk','# Ansible Infrastructure'],['',''],
+        ['sv','## Requirements'],
+        ['sv','- Ansible 2.10+'],
+        ['sv','- Python 3.8+'],['',''],
+        ['sv','## Setup'],
+        ['sc','```bash'],
+        ['sv','ansible-galaxy install -r requirements.yml'],
+        ['sv','echo "YourPass" > vault/.vault_pass && chmod 600 vault/.vault_pass'],
+        ['sc','```'],['',''],
+        ['sv','## Run'],
+        ['sc','```bash'],
+        ['sv','ansible-playbook site.yml                       # all'],
+        ['sv','ansible-playbook dbservers.yml                  # DB only'],
+        ['sv','ansible-playbook site.yml -i inventory/staging  # staging'],
+        ['sc','```']
+      ]
+    }
+  };
+
+  function buildLines(lines) {
+    var result = [];
+    var row = [];
+    for (var i = 0; i < lines.length; i++) {
+      var cls = lines[i][0];
+      var val = lines[i][1];
+      if (!cls && val === '') {
+        result.push(row.join(''));
+        row = [];
+      } else if (!cls) {
+        row.push(esc(val));
+      } else {
+        row.push('<span class="' + cls + '">' + esc(val) + '</span>');
+      }
+    }
+    if (row.length) result.push(row.join(''));
+    return result.join('\n');
+  }
+
+  function buildOverview(lines) {
+    var result = [];
+    var row = [];
+    for (var i = 0; i < lines.length; i++) {
+      var cls = lines[i][0];
+      var val = lines[i][1];
+      if (!cls && val === '') {
+        result.push(row.join(''));
+        row = [];
+      } else if (!cls) {
+        row.push(val);
+      } else {
+        row.push('<span class="' + cls + '">' + val + '</span>');
+      }
+    }
+    if (row.length) result.push(row.join(''));
+    return result.join('\n');
+  }
+
+  function renderContent(key) {
+    var f = files[key];
+    if (!f) return;
+    var body = document.getElementById('body');
+    var out = '';
+
+    out += '<div class="filepath">ansible-project / <span>' + esc(f.label) + '</span></div>';
+    out += '<div class="sec-title">' + f.icon + ' ' + esc(f.label) + '</div>';
+    out += '<div class="purpose"><span class="why">Why this file exists</span>' + f.purpose + '</div>';
+
+    if (f.isOverview) {
+      out += '<div class="code-block">';
+      out += '<div class="code-head"><span>Full project layout</span><span class="lang">TREE</span></div>';
+      out += '<pre>' + buildOverview(overviewLines) + '</pre></div>';
+      out += '<div class="sec-title" style="margin-top:20px">Key Best Practices</div>';
+      out += '<div class="bp-grid">';
+      for (var b = 0; b < bpCards.length; b++) {
+        out += '<div class="bp-card"><div class="bpt">' + esc(bpCards[b][0]) + '</div><p>' + esc(bpCards[b][1]) + '</p></div>';
+      }
+      out += '</div>';
+    } else if (f.code) {
+      out += '<div class="code-block">';
+      out += '<div class="code-head"><span>' + esc(f.label) + '</span><span class="lang">' + (f.lang || 'YAML') + '</span></div>';
+      out += '<pre>' + buildLines(f.code) + '</pre></div>';
+    }
+
+    body.innerHTML = out;
+  }
+
+  function renderTabs() {
+    var tabs = document.getElementById('tabs');
+    var out = '';
+    for (var i = 0; i < openTabs.length; i++) {
+      var k = openTabs[i];
+      var f = files[k];
+      var cls = k === activeTab ? 'tab active' : 'tab';
+      out += '<div class="' + cls + '" data-tabkey="' + k + '">' + f.icon + ' ' + esc(f.label) + '</div>';
+    }
+    tabs.innerHTML = out;
+
+    var els = tabs.querySelectorAll('.tab');
+    for (var j = 0; j < els.length; j++) {
+      (function(el) {
+        el.addEventListener('click', function() {
+          activeTab = el.getAttribute('data-tabkey');
+          renderTabs();
+          renderContent(activeTab);
+        });
+      })(els[j]);
+    }
+  }
+
+  function showFile(key) {
+    if (!files[key]) return;
+    if (openTabs.indexOf(key) === -1) openTabs.push(key);
+    activeTab = key;
+    renderTabs();
+    renderContent(key);
+  }
+
+  document.getElementById('sidebar').addEventListener('click', function(e) {
+    var item = e.target;
+    while (item && item !== this) {
+      if (item.classList.contains('tree-item')) break;
+      item = item.parentElement;
+    }
+    if (!item || !item.classList.contains('tree-item')) return;
+    var key = item.getAttribute('data-key');
+    if (!key || !files[key]) return;
+
+    var all = document.querySelectorAll('.tree-item');
+    for (var i = 0; i < all.length; i++) all[i].classList.remove('active');
+    var matches = document.querySelectorAll('.tree-item[data-key="' + key + '"]');
+    for (var m = 0; m < matches.length; m++) matches[m].classList.add('active');
+
+    showFile(key);
+  });
+
+  showFile('root');
+  var rootItems = document.querySelectorAll('.tree-item[data-key="root"]');
+  for (var r = 0; r < rootItems.length; r++) rootItems[r].classList.add('active');
+
+})();
+</script>
+</body>
+</html>
