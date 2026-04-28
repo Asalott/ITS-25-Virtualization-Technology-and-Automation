@@ -28,14 +28,11 @@
  
 ## 07-added-inventory.ini
      - Added inventory.ini with ip-adresses and ssh-key adress
- 
+     - # Added in vagrant file to pull branch 07
+       git clone -b 07-added-inventory.ini https://github.com/A-Hagman/ITS25-School-project-Load-balanced-Video-Streaming-Server.git /home/vagrant/project
 ### Tested with:
- 
-(Added in vagrant file to pull branch 07):
-git clone -b 07-added-inventory.ini https://github.com/A-Hagman/ITS25-School-project-Load-balanced-Video-Streaming-Server.git /home/vagrant/project
- 
- 
-**(In powershell):**
+
+**In powershell:**
  
 *vagrant ssh control*
 *vagrant@control:~$ cd "/home/vagrant/project/ansible"*
