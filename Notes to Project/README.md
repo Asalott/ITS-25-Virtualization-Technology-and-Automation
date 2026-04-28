@@ -188,4 +188,34 @@ repo/
 
 ___________
 
-  
+## Komponence
+
+### Vagrantfile
+Defines six virtual machines in VirtualBox with a private network (_192.168.56.0/24_). Port forwarding from the load-balancing VM maps port 80 to 8080, making the web application reachable from the Windows host. The database server does not have any port forwarding deliberately, to keep it unreachable from outside.
+### ansible.cfg
+Points to the _inventory.ini_ file and enables SSH connections for Ansible control with `host_key_checking = False` (this is only suitable in lab environments). `roles_path = ./roles` to point to the files the roles.
+### Inventory.ini
+Groups the different servers into (_Loadbalancing_), (_Database_), (_Webservers_), (_Streaming_), and (_Control_).
+
+### Site.yml
+Master playbook for ansible
+
+________
+
+## Requierments and 
+
+#### Programs that must be installed on the windows host for this to work.
+
+- [VirtualBox ](https://www.virtualbox.org) —
+- [ Vagrant](https://developer.hashicorp.com/vagrant) —
+- [Git](https://git-scm.com/install/windows)
+
+### Hardware requierments
+
+- Att least 16 GB of RAM (The prodject uses a total of ~6 GB RAM)
+- Att least 20GB of free diskspace
+
+#### Secrets-fil:
+
+Creats a seacret.yml fille in the `vagrant/secrets.yml` based on the template
+`FILEPATH TO EXEMPLE.yml`
