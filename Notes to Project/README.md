@@ -37,16 +37,16 @@ git clone -b 07-added-inventory.ini https://github.com/A-Hagman/ITS25-School-pro
  
 **(In powershell):**
  
-vagrant ssh control
-vagrant@control:~$ cd "/home/vagrant/project/ansible"
+*vagrant ssh control*
+*vagrant@control:~$ cd "/home/vagrant/project/ansible"*
  
-vagrant@control:~/project/ansible$ ssh-keyscan -H 192.168.56.11 >> ~/.ssh/known_hosts
-vagrant@control:~/project/ansible$ ssh-keyscan -H 192.168.56.12 >> ~/.ssh/known_hosts
-vagrant@control:~/project/ansible$ ssh-keyscan -H 192.168.56.13 >> ~/.ssh/known_hosts
-vagrant@control:~/project/ansible$ ssh-keyscan -H 192.168.56.14 >> ~/.ssh/known_hosts
-vagrant@control:~/project/ansible$ ssh-keyscan -H 192.168.56.15 >> ~/.ssh/known_hosts
+*vagrant@control:~/project/ansible$ ssh-keyscan -H 192.168.56.11 >> ~/.ssh/known_hosts*
+*vagrant@control:~/project/ansible$ ssh-keyscan -H 192.168.56.12 >> ~/.ssh/known_hosts*
+*vagrant@control:~/project/ansible$ ssh-keyscan -H 192.168.56.13 >> ~/.ssh/known_hosts*
+*vagrant@control:~/project/ansible$ ssh-keyscan -H 192.168.56.14 >> ~/.ssh/known_hosts*
+*vagrant@control:~/project/ansible$ ssh-keyscan -H 192.168.56.15 >> ~/.ssh/known_hosts*
  
-vagrant@control:~/project/ansible$ ansible all -i inventory.ini -m ping
+*vagrant@control:~/project/ansible$ ansible all -i inventory.ini -m ping*
  
 ### Expected results:
  
