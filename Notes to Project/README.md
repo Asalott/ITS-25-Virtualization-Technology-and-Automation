@@ -120,3 +120,67 @@ We removed the key-generating code in Vagrant aswell as moving the creation of t
 The last changes did not work and after consulting the teacher we opted for "Host_key_checking = False" in the inventory.ini. This is not a "safe" method bud is will help us with the problem that occured when pinging. We also went back to using our own SSH-keys.
  
 ## 08-BLABLABLA
+
+
+# Readme
+_________
+## Enviorment and IP-addresses
+
+| VM        | Roll              | IP-address    | port forwarding   | Deskription  |
+| --------- | ----------------- | ------------- | ----------------- | ------------ |
+| Control   | Ansible Control   | 192.168.56.10 | -                 |              |
+| LB        | Loadbalancer      | 192.168.56.11 | : 80 -> host 8080 | nignx        |
+| web1      | Applikationserver | 192.168.56.12 | -                 |              |
+| web2      | Applikationserver | 192.168.56.13 | -                 |              |
+| database  | Databaseserver    | 192.168.56.14 | -                 | postegresSQL |
+| streaming | Streamingserver   | 192.168.56.15 | -                 |              |
+
+__________
+## Mapstrukter
+
+
+```
+repo/
+├── Vagrant/
+│   ├── Vagrantfile          # Definens and creats all VMs
+│
+├── ansible/
+│   ├── ansible.cfg 
+│   ├── inventory.ini        # List all the servers ansible controles
+│   ├── site.yml             # Master playbook defines the roles and there order
+│   │
+│   ├── vars/
+│   │   └── main.yml 
+│   │ 
+│ 	└── roles/              
+│       ├── control/
+│       │   └── tasks/
+│       │       └── main.yml
+│       │
+│       ├── database/
+│       │   └── tasks/
+│       │       └── main.yml
+│       │
+│       ├── loadbalancer/
+│       │   └── tasks/
+│       │       └── main.yml
+│       │
+│       ├── mediaserver/
+│       │   └── tasks/
+│       │       └── main.yml
+│       │
+│       └── webservers/
+│           └── tasks/
+│               └── main.yml
+│
+├── Pictures/ 
+│   └── Topology.png
+│
+├── .gitignore
+└── README.md
+  
+```
+
+___________
+
+  
