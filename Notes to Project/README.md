@@ -129,19 +129,38 @@ This resulted in working pings between Control to all VMs! This concludes this b
 
 # Readme
 _________
-## Enviorment and IP-addresses
+# **Projectname**
 
-| VM        | Roll              | IP-address    | port forwarding   | Deskription  |
-| --------- | ----------------- | ------------- | ----------------- | ------------ |
-| Control   | Ansible Control   | 192.168.56.10 | -                 |              |
-| LB        | Loadbalancer      | 192.168.56.11 | : 80 -> host 8080 | nignx        |
-| web1      | Applikationserver | 192.168.56.12 | -                 |              |
-| web2      | Applikationserver | 192.168.56.13 | -                 |              |
-| database  | Databaseserver    | 192.168.56.14 | -                 | postegresSQL |
-| streaming | Streamingserver   | 192.168.56.15 | -                 |              |
+> This project is a fully automated streaming service with six total VMs that are configured via Ansible.
+
+______
+## **Table of contents**
+- [Architecture](#Architecture)
+- [Environment and IP addresses](#EnvironmentandIPaddresses)
+- [Map structure](#Mapstructure)
+- [Komponence](#Komponence)
+- [Requirements and prerequisites](#Requirementsandprerequisites)
+- [Geting started](#Getingstarted)
+
+_________
+## **Architecture**
+
+![[Streaming.drawio.png]]
+
+____
+## **Environment and IP addresses**
+
+| VM        | Roll              | IP-address    | port forwarding   | Deskription                                                                       |
+| --------- | ----------------- | ------------- | ----------------- | --------------------------------------------------------------------------------- |
+| Control   | Ansible Control   | 192.168.56.10 | -                 | Ansible controler                                                                 |
+| LB        | Loadbalancer      | 192.168.56.11 | : 80 -> host 8080 | Nginx routes incoming traffic and load balances it evenly across backend servers. |
+| web1      | Applikationserver | 192.168.56.12 | -                 | Flask + SQLAlchemy                                                                |
+| web2      | Applikationserver | 192.168.56.13 | -                 | Flask + SQLAlchemy                                                                |
+| database  | Databaseserver    | 192.168.56.14 | -                 | postegresSQL                                                                      |
+| streaming | Streamingserver   | 192.168.56.15 | -                 | Nginx                                                                             |
 
 __________
-## Mapstrukter
+## **Map structure**
 
 
 ```
@@ -167,6 +186,10 @@ repo/
 │       │       └── main.yml
 │       │
 │       ├── loadbalancer/
+│       │   ├── teamplates/
+│       │ 	│ 	└── nginx.conf.j2
+│       │   ├── handlers/
+│       │ 	│	└── main.yml
 │       │   └── tasks/
 │       │       └── main.yml
 │       │
@@ -175,8 +198,18 @@ repo/
 │       │       └── main.yml
 │       │
 │       └── webservers/
-│           └── tasks/
-│               └── main.yml
+│           ├── tasks/
+│           │  └── main.yml
+│           └── files/
+│ 				└── reguierments.txt
+│
+├── flask/
+│   ├── app.py
+│   ├── models.py
+│   ├── templates/
+│ 	│ 	└── index.html
+│   └── static/
+│ 		└── streming.css
 │
 ├── Pictures/ 
 │   └── Topology.png
@@ -188,26 +221,52 @@ repo/
 
 ___________
 
-## Komponence
+## **Komponence**
 
 ### Vagrantfile
+
 Defines six virtual machines in VirtualBox with a private network (_192.168.56.0/24_). Port forwarding from the load-balancing VM maps port 80 to 8080, making the web application reachable from the Windows host. The database server does not have any port forwarding deliberately, to keep it unreachable from outside.
+
 ### ansible.cfg
-Points to the _inventory.ini_ file and enables SSH connections for Ansible control with `host_key_checking = False` (this is only suitable in lab environments). `roles_path = ./roles` to point to the files the roles.
+
+Points to the `inventory.ini` file and enables SSH connections for Ansible control with `host_key_checking = False` (this is only suitable in lab environments). `roles_path = ./roles` to point to the files for the roles.
+
 ### Inventory.ini
-Groups the different servers into (_Loadbalancing_), (_Database_), (_Webservers_), (_Streaming_), and (_Control_).
+
+Groups the different servers into (_Loadbalancing_), (_Database_), (_Webservers_), (_Streaming_), and (_Control_). This is done with IP addresses.
 
 ### Site.yml
-Master playbook for ansible
+
+Master playbook for Ansible that both points to the `vars/vars.yml` and also couples the roles to the different groups made in the `inventory.ini`.
+
+### Roll loadbalancer
+
+Installs nginx and configures the nginx program to route all traffic from the webservers to it.
+
+### Roll Webservers
+
+Installs Flask and the plugin SQLAlchemy that allows the Flask app to be connected to the database VM.
+
+### Roll Streaming
+
+Installs nginx
+
+### Roll Database
+
+Installs PostgreSQL and configures a database table
+
+### Flask application (app.py)
+
+
 
 ________
 
-## Requierments and 
+## **Requirements and prerequisites**
 
-#### Programs that must be installed on the windows host for this to work.
+#### Programs that must be installed on the Windows host for this project to work.
 
 - [VirtualBox ](https://www.virtualbox.org) —
-- [ Vagrant](https://developer.hashicorp.com/vagrant) —
+- [Vagrant](https://developer.hashicorp.com/vagrant) —
 - [Git](https://git-scm.com/install/windows)
 
 ### Hardware requierments
@@ -219,3 +278,48 @@ ________
 
 Creats a seacret.yml fille in the `vagrant/secrets.yml` based on the template
 `FILEPATH TO EXEMPLE.yml`
+
+________
+
+## **Geting started**
+```
+# 1. clone the github repo vi ether ssh or https
+
+# ssh
+git clone  git@github.com:A-Hagman/ITS25-School-project-Load-balanced-Video-Streaming-Server.git
+
+# https
+git clone https://github.com/A-Hagman/ITS25-School-project-Load-balanced-Video-Streaming-Server.git
+
+cd ITS25-School-project-Load-balanced-Video-Streaming-Server
+
+# 2. creat the secrets-file
+
+
+# 3. start all of the VMs
+cd vargrant 
+vagrant up
+
+# 4. ssh into the ansible controlnode
+vagrant ssh control
+
+# 5. execute the ansible playbook
+cd ~/ITS25-School-project-Load-balanced-Video-Streaming-Server/ansible
+ansible-playbook -i inventory.yml site.yml -v
+
+# 6. validate
+bash test/verify.sh
+```
+
+### Expectations
+
+---
+## **Secrets**
+
+---
+## **Security**
+
+---
+## **Securityanalisys**
+
+____
