@@ -174,7 +174,8 @@ repo/
 │   ├── site.yml             # Master playbook defines the roles and there order
 │   │
 │   ├── vars/
-│   │   └── main.yml 
+│   │   ├── vars.yml 
+│   │	└── secrets.example.yml
 │   │ 
 │ 	└── roles/              
 │       ├── control/
@@ -182,8 +183,12 @@ repo/
 │       │       └── main.yml
 │       │
 │       ├── database/
-│       │   └── tasks/
-│       │       └── main.yml
+│       │   ├── tasks/
+│       │   │   └── main.yml
+│       │   ├── files/
+│       │   │  	└── seed.sql
+│       │   └── handlers/
+│       │     	└── main.yml
 │       │
 │       ├── loadbalancer/
 │       │   ├── teamplates/
@@ -200,8 +205,12 @@ repo/
 │       └── webservers/
 │           ├── tasks/
 │           │  └── main.yml
-│           └── files/
-│ 				└── reguierments.txt
+│           ├── files/
+│           │  	└── reguierments.txt
+│           ├── handlers/
+│           │  	└── main.yml
+│           └──templates
+│           	└── flask.service.j2
 │
 ├── flask/
 │   ├── app.py
@@ -218,6 +227,7 @@ repo/
 └── README.md
   
 ```
+
 
 ___________
 
