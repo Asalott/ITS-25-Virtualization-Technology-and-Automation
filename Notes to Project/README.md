@@ -145,7 +145,7 @@ ______
 _________
 ## **Architecture**
 
-![[Streaming.drawio.png]]
+![alt text](Streaming.drawio.png)
 
 ____
 ## **Environment and IP addresses**
