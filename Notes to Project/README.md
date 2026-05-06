@@ -171,8 +171,51 @@ curl http://192.168.56.11/health
      - Created roles/database/handlers/main.ym
      - Replaced roles/webserver/files/app.py with the full version that uses SQLAlchemy
      - Updated roles/webserver/templates/flask.service.j2 with database details in Environment.
-       *(this refers to /vars/vars.yml and /vars/secrets.yml)*
-     - 
+       (this refers to /vars/vars.yml and /vars/secrets.yml)
+     - Updated site.yml to include the database (running first)
+     - Added code to vagrant file to copy secrets.yml from /vagrant/ to
+       /home/vagrant/project/ansible/vars/secrets.yml
+
+## 11-Streaming-VM
+     - Created roles/streaming/tasks/main.yml
+     - Created roles/streaming/handlers/main.yml
+     - Created roles/streaming/templates/nginx.conf.j2
+     - Updated site.yml to include the streaming VM
+     - Added code to vagrant file to create /var/www/videos and copy the .mp4-file from /vagrant/
+
+ ### Verification:
+  **Run playbook**
+  ```
+ansible-playbook site.yml -v
+```
+
+  **Verify that the streaming-server is serving files**
+  ```
+curl -I http://192.168.56.15/videos/nitflix.mp4
+```
+*Expected result:*
+```
+HTTP/1.1 200 OK
+Content-Type: video/mp4
+```
+
+  **Verify the entire chain via the loadbalancer**
+  ```
+curl http://192.168.56.11/
+```
+*Expected result:*
+```
+Nitflix HTML page with the video player
+```
+
+  **Verify thought web browser**
+```
+http://192.168.56.11
+```
+*Expected result:*
+```
+Nitflix webpage that allows to play the video (.mp4)
+```
 
 # Readme
 _________
