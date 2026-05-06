@@ -124,8 +124,48 @@ The "Host_key_checking = False" was not supposed to be in inventory.ini, it was 
 
 This resulted in working pings between Control to all VMs! This concludes this branch.
 
-## 08-BLABLABLA
+## 08-Loadbalancer-VM
+     - Updated tasks/main.yml with remove default site
+     - Added /handlers/main.yml
+     - Added /templates/nginx.conf.j2
 
+## 09-Webbserver-1-VM 
+Clarification: This branch is for both webserver1 and webserver2
+
+     - Created roles/webserver/files/requirements.txt
+     - Created roles/webserver/files/app.py 
+       (simplified version to test functionality - it will only return hostname to verify loadbalancer without a database)
+     - Created roles/webserver/tasks/main.yml
+     - Created roles/webserver/templates/flask.service.j2
+     - Created roles/webserver/handlers/main.yml
+     - Updated site.yml to include webservers
+
+### Verification:
+  **Run playbook**
+  ```
+ansible-playbook site.yml -v
+```
+
+  *failed=0 after playbook is running*
+
+  **Check if flask is active on webserver1**
+  ```
+ansible webservers -m command -a "systemctl status flask"
+```
+
+  **Test throught loadbalancer**
+  ```
+curl http://192.168.56.11/
+curl http://192.168.56.11/health
+  ```
+
+  *Expected result:*
+ ```
+<h1>Hej fran webserver1!</h1>
+{"hostname": "webserver1", "status": "ok"}
+```
+
+  
 
 # Readme
 _________
