@@ -129,35 +129,36 @@ This resulted in working pings between Control to all VMs! This concludes this b
 
 # Readme
 _________
+
 # **Projectname**
 
-> This project is a fully automated streaming service with six total VMs that are configured via Ansible.
+> This project is a fully automated simulation of a simple streaming service with six total VMs that are configured via Ansible and created with Vagrant.
 
 ______
 ## **Table of contents**
 - [Architecture](#Architecture)
-- [Environment and IP addresses](#EnvironmentandIPaddresses)
-- [Map structure](#Mapstructure)
+- [Environment and IP addresses](#Environment and IP addresses)
+- [Map structure](#Map structure)
 - [Komponence](#Komponence)
-- [Requirements and prerequisites](#Requirementsandprerequisites)
-- [Geting started](#Getingstarted)
+- [Requirements and prerequisites](#Requirements and prerequisites)
+- [Geting started ](#Geting started)
 
 _________
 ## **Architecture**
 
-![alt text](Streaming.drawio.png)
+![[Streaming.drawio.png]]
 
 ____
 ## **Environment and IP addresses**
 
-| VM        | Roll              | IP-address    | port forwarding   | Deskription                                                                       |
-| --------- | ----------------- | ------------- | ----------------- | --------------------------------------------------------------------------------- |
-| Control   | Ansible Control   | 192.168.56.10 | -                 | Ansible controler                                                                 |
-| LB        | Loadbalancer      | 192.168.56.11 | : 80 -> host 8080 | Nginx routes incoming traffic and load balances it evenly across backend servers. |
-| web1      | Applikationserver | 192.168.56.12 | -                 | Flask + SQLAlchemy                                                                |
-| web2      | Applikationserver | 192.168.56.13 | -                 | Flask + SQLAlchemy                                                                |
-| database  | Databaseserver    | 192.168.56.14 | -                 | postegresSQL                                                                      |
-| streaming | Streamingserver   | 192.168.56.15 | -                 | Nginx                                                                             |
+| VM        | Roll              | IP-address    | port forwarding   | Deskription                                                                             |
+| --------- | ----------------- | ------------- | ----------------- | --------------------------------------------------------------------------------------- |
+| Control   | Ansible Control   | 192.168.56.10 | -                 | Ansible controler handels the installasion of all programs and configurasion on all VMs |
+| LB        | Loadbalancer      | 192.168.56.11 | : 80 -> host 5000 | Nginx routes incoming traffic and load balances it evenly across backend servers.       |
+| web1      | Applikationserver | 192.168.56.12 | -                 | Flask + SQLAlchemy + Gunicorn                                                           |
+| web2      | Applikationserver | 192.168.56.13 | -                 | Flask + SQLAlchemy + Gunicorn                                                           |
+| database  | Databaseserver    | 192.168.56.14 | -                 | postegresSQL                                                                            |
+| streaming | Streamingserver   | 192.168.56.15 | -                 | Nginx                                                                                   |
 
 __________
 ## **Map structure**
@@ -228,10 +229,9 @@ repo/
   
 ```
 
-
 ___________
 
-## **Komponence**
+## **Componence**
 
 ### Vagrantfile
 
@@ -249,9 +249,17 @@ Groups the different servers into (_Loadbalancing_), (_Database_), (_Webservers_
 
 Master playbook for Ansible that both points to the `vars/vars.yml` and also couples the roles to the different groups made in the `inventory.ini`.
 
+This file also controles the order in witch the roles are run
+
+1. streaming - configures the streaming vm to 
+2. database - configures the database 
+3. webservers - configures both of the webservers
+4. loadbaring - configures the loadbaring
+
+
 ### Roll loadbalancer
 
-Installs nginx and configures the nginx program to route all traffic from the webservers to it.
+Installs nginx and configures the nginx program to route all traffic from the webservers to it. This is done dynamically via the webservers group in `inventory.ini`
 
 ### Roll Webservers
 
@@ -263,7 +271,7 @@ Installs nginx
 
 ### Roll Database
 
-Installs PostgreSQL and configures a database table
+Installs PostgreSQL and configures a database table in the `seed.sql` fill
 
 ### Flask application (app.py)
 
@@ -279,15 +287,15 @@ ________
 - [Vagrant](https://developer.hashicorp.com/vagrant) —
 - [Git](https://git-scm.com/install/windows)
 
-### Hardware requierments
+### Hardware requirements
 
-- Att least 16 GB of RAM (The prodject uses a total of ~6 GB RAM)
-- Att least 20GB of free diskspace
+- At least 16 GB of RAM (The project uses a total of ~6 GB RAM)
+- At least 20 GB of free disk space
 
-#### Secrets-fil:
+#### Secrets file:
 
-Creats a seacret.yml fille in the `vagrant/secrets.yml` based on the template
-`FILEPATH TO EXEMPLE.yml`
+Creates a `secret.yml` file in `vagrant/secrets.yml` based on the template  
+`secrets.example.yml`
 
 ________
 
@@ -304,7 +312,7 @@ git clone https://github.com/A-Hagman/ITS25-School-project-Load-balanced-Video-S
 cd ITS25-School-project-Load-balanced-Video-Streaming-Server
 
 # 2. creat the secrets-file
-
+creat an secrets.yml based on the secrets.example.yml file
 
 # 3. start all of the VMs
 cd vargrant 
@@ -322,9 +330,18 @@ bash test/verify.sh
 ```
 
 ### Expectations
+Open `https://`localhost:xxxx in a webbrowser, you should se the Nitflix website and be able to se the video stored on the streaming vm.
 
 ---
 ## **Secrets**
+
+The file `/vars/secrets.yml` must be created locally and is never committed to GitHub because it's exempted via the `.gitignore`, and it should never be committed to GitHub.
+
+Copy the variables from the example secrets file and fill in real values.
+
+The file should be available.
+
+
 
 ---
 ## **Security**
@@ -333,3 +350,11 @@ bash test/verify.sh
 ## **Securityanalisys**
 
 ____
+
+## **Validation**
+
+____
+
+*Skapad av: [Anton Hagman, William Åström]*  
+*Kurs: Virtualiseringsteknik*  
+*Datum: [2026-05-xx]*
