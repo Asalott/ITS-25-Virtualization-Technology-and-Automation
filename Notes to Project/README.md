@@ -165,7 +165,14 @@ curl http://192.168.56.11/health
 {"hostname": "webserver1", "status": "ok"}
 ```
 
-  
+## 10-Database-VM
+     - Created roles/database/files/seed.sql
+     - Created roles/database/tasks/main.yml
+     - Created roles/database/handlers/main.ym
+     - Replaced roles/webserver/files/app.py with the full version that uses SQLAlchemy
+     - Updated roles/webserver/templates/flask.service.j2 with database details in Environment.
+       *(this refers to /vars/vars.yml and /vars/secrets.yml)*
+     - 
 
 # Readme
 _________
