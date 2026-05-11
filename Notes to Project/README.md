@@ -220,18 +220,22 @@ Nitflix webpage that allows to play the video (.mp4)
 # Readme
 _________
 
-# **Projectname**
+
+# **Streaming service**
 
 > This project is a fully automated simulation of a simple streaming service with six total VMs that are configured via Ansible and created with Vagrant.
 
 ______
 ## **Table of contents**
 - [Architecture](#Architecture)
-- [Environment and IP addresses](#Environment and IP addresses)
+- [Environment and IP addresses](#EnvironmentandIPaddresses)
 - [Map structure](#Map structure)
-- [Komponence](#Komponence)
-- [Requirements and prerequisites](#Requirements and prerequisites)
-- [Geting started ](#Geting started)
+- [Componence](#Componence)
+- [Requirements and prerequisites](#Requirementsandprerequisites)
+- [Geting started ](#Getingstarted)
+- Securityanalisys
+- Validation
+- Design and Architecture
 
 _________
 ## **Architecture**
@@ -244,11 +248,12 @@ ____
 | VM        | Roll              | IP-address    | port forwarding   | Deskription                                                                             |
 | --------- | ----------------- | ------------- | ----------------- | --------------------------------------------------------------------------------------- |
 | Control   | Ansible Control   | 192.168.56.10 | -                 | Ansible controler handels the installasion of all programs and configurasion on all VMs |
-| LB        | Loadbalancer      | 192.168.56.11 | : 80 -> host 5000 | Nginx routes incoming traffic and load balances it evenly across backend servers.       |
+| LB        | Loadbalancer      | 192.168.56.11 | : 80 -> host 8080 | Nginx routes incoming traffic and load balances it evenly across backend servers.       |
 | web1      | Applikationserver | 192.168.56.12 | -                 | Flask + SQLAlchemy + Gunicorn                                                           |
 | web2      | Applikationserver | 192.168.56.13 | -                 | Flask + SQLAlchemy + Gunicorn                                                           |
 | database  | Databaseserver    | 192.168.56.14 | -                 | postegresSQL                                                                            |
 | streaming | Streamingserver   | 192.168.56.15 | -                 | Nginx                                                                                   |
+|           |                   |               |                   |                                                                                         |
 
 __________
 ## **Map structure**
@@ -256,8 +261,12 @@ __________
 
 ```
 repo/
+├── Pictures/ 
+│   └── Topology.png
+│
 ├── Vagrant/
 │   ├── Vagrantfile          # Definens and creats all VMs
+│	└── nitflix.mp4	
 │
 ├── ansible/
 │   ├── ansible.cfg 
@@ -265,14 +274,10 @@ repo/
 │   ├── site.yml             # Master playbook defines the roles and there order
 │   │
 │   ├── vars/
-│   │   ├── vars.yml 
+│   │   ├── vars.yml         # Defines varibles
 │   │	└── secrets.example.yml
 │   │ 
 │ 	└── roles/              
-│       ├── control/
-│       │   └── tasks/
-│       │       └── main.yml
-│       │
 │       ├── database/
 │       │   ├── tasks/
 │       │   │   └── main.yml
@@ -289,31 +294,27 @@ repo/
 │       │   └── tasks/
 │       │       └── main.yml
 │       │
-│       ├── mediaserver/
-│       │   └── tasks/
-│       │       └── main.yml
+│       ├── streaming/
+│       │   ├── tasks/
+│       │   │   └── main.yml
+│       │   ├── handlers/
+│       │   │   └── main.yml
+│       │   └── teamplates/
+│       │       └── nginx.conf.j2
 │       │
 │       └── webservers/
 │           ├── tasks/
 │           │  └── main.yml
 │           ├── files/
-│           │  	└── reguierments.txt
+│           │  	├── requirements.txt
+│           │  	├── app.py
+│           │   ├── streming.css
+│           │  	└── templates/
+│           │  	    └── index.html
 │           ├── handlers/
 │           │  	└── main.yml
-│           └──templates
+│           └──templates/
 │           	└── flask.service.j2
-│
-├── flask/
-│   ├── app.py
-│   ├── models.py
-│   ├── templates/
-│ 	│ 	└── index.html
-│   └── static/
-│ 		└── streming.css
-│
-├── Pictures/ 
-│   └── Topology.png
-│
 ├── .gitignore
 └── README.md
   
@@ -342,9 +343,9 @@ Master playbook for Ansible that both points to the `vars/vars.yml` and also c
 This file also controles the order in witch the roles are run
 
 1. streaming - configures the streaming vm to 
-2. database - configures the database 
-3. webservers - configures both of the webservers
-4. loadbaring - configures the loadbaring
+2. database - configures the database vm to creat the db table
+3. webservers - configures both of the webservers vm
+4. loadbaring - configures the loadbaring vm
 
 
 ### Roll loadbalancer
@@ -353,11 +354,11 @@ Installs nginx and configures the nginx program to route all traffic from the we
 
 ### Roll Webservers
 
-Installs Flask and the plugin SQLAlchemy that allows the Flask app to be connected to the database VM.
+Installs Flask and the plugin SQLAlchemy that allows the Flask app to be connected to the database table `seed.sql` that runs on the database VM.
 
 ### Roll Streaming
 
-Installs nginx
+Installs nginx and configures the vm to 
 
 ### Roll Database
 
@@ -390,7 +391,7 @@ Creates a `secret.yml` file in `vagrant/secrets.yml` based on the template
 ________
 
 ## **Geting started**
-```
+```bash
 # 1. clone the github repo vi ether ssh or https
 
 # ssh
@@ -420,31 +421,56 @@ bash test/verify.sh
 ```
 
 ### Expectations
-Open `https://`localhost:xxxx in a webbrowser, you should se the Nitflix website and be able to se the video stored on the streaming vm.
+Open `https://192.168.52.11` in a browser you should be able to se the website Nitflix and be able to watch the test video on the site. The site should retrive the information that is storde in the database vm where the videos url is stored form the streaming vm.
 
 ---
 ## **Secrets**
 
-The file `/vars/secrets.yml` must be created locally and is never committed to GitHub because it's exempted via the `.gitignore`, and it should never be committed to GitHub.
+The file `/vagrant/secrets.yml` must be created locally and is never committed to GitHub because it containes sensetive infromation like passwords, and there for  it's exempted to be commited to Github via the `.gitignore file.
 
 Copy the variables from the example secrets file and fill in real values.
 
-The file should be available.
-
-
+The file should be available via on the control node via the shard vagrant folder .`vagrant`.
 
 ---
 ## **Security**
+There is none
 
 ---
 ## **Securityanalisys**
+
+### Curent Shortcomings
+#### 1: No firewall rules
+
+####  2: Unencrypted comunications
+
+#### 3: idk
+
+
 
 ____
 
 ## **Validation**
 
+To vallidate that every thing is working corecly run the automated validations skript 
+
+```bash
+Bash ansible/test/verify.sh
+```
+The script validates the following
+
+
 ____
 
+## **Design and Architecture**
+
+
+
+
+
+____
 *Skapad av: [Anton Hagman, William Åström]*  
 *Kurs: Virtualiseringsteknik*  
-*Datum: [2026-05-xx]*
+*Datum: [2026-05-12]*
+
+
