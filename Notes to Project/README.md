@@ -259,61 +259,61 @@ __________
 ```
 repo/
 ├── Pictures/ 
-│   └── Topology.png
+│   └── Topology.png                    # Network topology diagram showing VM layout
 │
 ├── Vagrant/
-│   ├── Vagrantfile          # Definens and creats all VMs
-│	└── nitflix.mp4	
+│   ├── Vagrantfile                     # Definens and creats all VMs, runs provision scripts
+│   └── nitflix.mp4	                    # Video file copied to streaming VM on boot
 │
 ├── ansible/
-│   ├── ansible.cfg 
-│   ├── inventory.ini        # List all the servers ansible controles
-│   ├── site.yml             # Master playbook defines the roles and there order
+│   ├── ansible.cfg                     # Ansible settings: inventory path, host_key_checking, pipelining
+│   ├── inventory.ini                   # Lists all VMs with IPs and groups (loadbalancer, webservers, etc.)
+│   ├── site.yml                        # Master playbook — runs all roles in correct order
 │   │
 │   ├── vars/
-│   │   ├── vars.yml         # Defines varibles
-│   │	└── secrets.example.yml
+│   │   ├── vars.yml                    # Non-sensitive variables: db_name, IP-addresses
+│   │	└── secrets.example.yml         # Template showing structure of secrets.yml
 │   │ 
-│ 	└── roles/              
+│ 	 └── roles/              
 │       ├── database/
 │       │   ├── tasks/
-│       │   │   └── main.yml
+│       │   │   └── main.yml            # Installs PostgreSQL, creates DB/user, runs seed.sql
 │       │   ├── files/
-│       │   │  	└── seed.sql
+│       │   │  	└── seed.sql            # Creates videos table, grants SELECT to nitflix_user, inserts test data
 │       │   └── handlers/
-│       │     	└── main.yml
+│       │     	└── main.yml            # Restarts PostgreSQL when config changes
 │       │
 │       ├── loadbalancer/
-│       │   ├── teamplates/
-│       │ 	│ 	└── nginx.conf.j2
+│       │   ├── templates/
+│       │ 	│ 	 └── nginx.conf.j2      # Nginx config — dynamically generates upstream block from inventory
 │       │   ├── handlers/
-│       │ 	│	└── main.yml
+│       │ 	│	  └── main.yml          # Reloads nginx when config changes
 │       │   └── tasks/
-│       │       └── main.yml
+│       │       └── main.yml            # Installs and configures nginx as load balancer
 │       │
 │       ├── streaming/
 │       │   ├── tasks/
-│       │   │   └── main.yml
+│       │   │   └── main.yml            # Installs and configures nginx as static file server
 │       │   ├── handlers/
-│       │   │   └── main.yml
-│       │   └── teamplates/
-│       │       └── nginx.conf.j2
+│       │   │   └── main.yml            # Reloads nginx when config changes
+│       │   └── templates/
+│       │       └── nginx.conf.j2       # Nginx config — serves video files from /var/www/videos/
 │       │
 │       └── webservers/
 │           ├── tasks/
-│           │  └── main.yml
+│           │   └── main.yml            # Installs Python, creates venv, copies app files, starts Flask
 │           ├── files/
-│           │  	├── requirements.txt
-│           │  	├── app.py
-│           │   ├── streming.css
+│           │  	├── requirements.txt    # Python dependencies: Flask, SQLAlchemy, psycopg2, Gunicorn
+│           │  	├── app.py              # Flask app — fetches video data from PostgreSQL, renders HTML
+│           │   ├── streming.css        # Stylesheet for the Nitflix web page
 │           │  	└── templates/
-│           │  	    └── index.html
+│           │  	    └── index.html      # Jinja2 HTML template — displays video player with DB data
 │           ├── handlers/
-│           │  	└── main.yml
+│           │  	└── main.yml            # Reloads systemd and restarts Flask when files change
 │           └──templates/
-│           	└── flask.service.j2
-├── .gitignore
-└── README.md
+│           	  └── flask.service.j2  # systemd service — autostart Flask/Gunicorn on boot
+├── .gitignore                          # Excludes secrets.yml and unnecessary vagrant files from being uploaded to Github
+└── README.md                           # Project documentation
   
 ```
 
