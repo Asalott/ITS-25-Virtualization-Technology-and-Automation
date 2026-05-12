@@ -344,16 +344,16 @@ This file also controles the order in witch the roles are run
 3. webservers - configures both of the webservers vm
 4. loadbaring - configures the loadbaring vm
 
-### **Rolle loadbalancer**
+### **Role loadbalancer**
 The load balancer role installs and configures Nginx to redirect all traffic to the web servers, this allows the web servers to share the load for the site. It gets the web server IPs from the `inventory.ini` file. The load balancer is configured with a 50/50 balance, meaning both web servers receive 50% of the incoming traffic. This can be changed by editing the /templates/nginx.conf.j2 file.
 
-### **Roll Webservers**
+### **Role Webservers**
 The web server role installs all the programs listed in `/files/requirements.txt` and configures Gunicorn and Flask. It also uses the Python library SQLAlchemy to connect the database table in `seed.sql` to the Flask `app.py` and the `index.html` that is loaded in the Flask app. This makes the HTML file able to load values from the database with out php code.
 
-### Roll Streaming
+### Role Streaming
 The streaming role installs and configures Nginx for the purpose of acting as a streaming server. It listens on port `80` and uses the `Accept-Ranges bytes` header which allows the browser to request the video in small chunks, enabling the video to play while it is still loading. It creates a folder called `/var/www/videos` where all the videos are stored, and all files placed in that folder become available to stream if they are the correct format.
 
-### Roll Database
+### Role Database
 The database role installs PostgreSQL and creates a database table with the `seed.sql` file with these columns:
 
 - `id` SERIAL PRIMARY KEY
