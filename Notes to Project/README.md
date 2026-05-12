@@ -335,14 +335,13 @@ Groups the different servers into (_Loadbalancing_), (_Database_), (_Webservers_
 
 ### **Site.yml**
 
-Master playbook for Ansible that both points to the `vars/vars.yml` and also couples the roles to the different groups made in the `inventory.ini`.
+Master playbook for Ansible that points to `vars/vars.yml` and couples the roles to the different groups defined in `inventory.ini`.
+This file also controls the order in which the roles are run:
 
-This file also controles the order in witch the roles are run
-
-1. streaming - configures the streaming vm to 
-2. database - configures the database vm to creat the db table
-3. webservers - configures both of the webservers vm
-4. loadbaring - configures the loadbaring vm
+`streaming` - configures the streaming VM
+`database` - configures the database VM to create the database table
+`webservers` - configures both of the web server VMs
+`loadbalancer` - configures the load balancing VM
 
 ### **Role loadbalancer**
 The load balancer role installs and configures Nginx to redirect all traffic to the web servers, this allows the web servers to share the load for the site. It gets the web server IPs from the `inventory.ini` file. The load balancer is configured with a `50/50` balance, meaning both web servers receive `50%` of the incoming traffic. This can be changed by editing the `/templates/nginx.conf.j2` file.
