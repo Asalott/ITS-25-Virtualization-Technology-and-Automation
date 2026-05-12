@@ -345,7 +345,7 @@ This file also controles the order in witch the roles are run
 4. loadbaring - configures the loadbaring vm
 
 ### **Role loadbalancer**
-The load balancer role installs and configures Nginx to redirect all traffic to the web servers, this allows the web servers to share the load for the site. It gets the web server IPs from the `inventory.ini` file. The load balancer is configured with a 50/50 balance, meaning both web servers receive 50% of the incoming traffic. This can be changed by editing the /templates/nginx.conf.j2 file.
+The load balancer role installs and configures Nginx to redirect all traffic to the web servers, this allows the web servers to share the load for the site. It gets the web server IPs from the `inventory.ini` file. The load balancer is configured with a `50/50` balance, meaning both web servers receive `50%` of the incoming traffic. This can be changed by editing the `/templates/nginx.conf.j2` file.
 
 ### **Role Webservers**
 The web server role installs all the programs listed in `/files/requirements.txt` and configures Gunicorn and Flask. It also uses the Python library SQLAlchemy to connect the database table in `seed.sql` to the Flask `app.py` and the `index.html` that is loaded in the Flask app. This makes the HTML file able to load values from the database with out php code.
