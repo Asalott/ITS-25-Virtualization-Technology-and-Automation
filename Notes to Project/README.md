@@ -467,22 +467,27 @@ ____
 
 ## **Design and Architecture**
 
-### Why are there two web servers and a load balancer? 
+### **Why are there two web servers and a load balancer?**
 If we had only used one web server and no load balancer, that would have made the project easier, but we decided to add some more complexity by doing that to simulate how a real streaming service is set up. We also could have added another streaming server and a load balancer to have something even more like a real streaming service, but we decided not to do that.
 
 The setup also allows one of the web servers to be taken down by, for example, a cyber attack without completely shutting down the site.
 
-### Why do we have a separate streaming server and not just use the database?
+### **Why do we have a separate streaming server and not just use the database?**
 By having a separate streaming server, it makes scaling the operation easier, as databases are quite hard to scale and it does not put unnecessary strain on the database when the site is in use. Databases are also quite bad at serving large files, which can result in the site becoming slower.
 
 It may also add some extra layers of protection to both the streaming server and database when configured correctly.
 
-### Why do we use Gunicorn and SQLAlchemy? 
+### **Why do we use Gunicorn and SQLAlchemy?** 
 Gunicorn, or **Green Unicorn**, is a Python based web server program that works with Flask. Gunicorn can handle multiple requests at the same time and allows for multiple workers on the same CPU core, making it generally faster and more reliable than just a Flask application. Gunicorn sits in front of the Flask application, allowing you to use a normal Flask application with Gunicorn to gain its benefits. There for we decided to use it in oure project to make the Flask application faster and more reliable.
 
 SQLAlchemy is a Python based library that allows you to use Python code to interact with a database instead of using raw SQL queries. We use SQLAlchemy to allow the Flask application to request the necessary information from the database VM, like video title, views, and the streaming URL. 
 
 Flask does not allow you to natively use a SQL database, so either way we would have needed a library, but we decided on SQLAlchemy because it uses Python code and not SQL code, and we are better at Python than SQL.
+
+### **Why do we use Nginx for both the load baring vm and the streaming vm**
+We use Nginx on both the load balancing VM and the streaming VM. For the load balancing VM, Nginx is one of the most widely used tools for that purpose in the world, being easy to install and configure, and relatively lightweight and fast, making it an extremely good tool for that role.
+
+For the streaming VM we chose it because Nginx has a technique called sendfile, which allows it to send a file over the network without copying it through the application first, making it really efficient at sending large static files, which is exactly what a streaming service needs.
 
 ____
 *Skapad av: [Anton Hagman, William Åström]*  
