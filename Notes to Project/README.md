@@ -241,7 +241,7 @@ ______
 
 _________
 ## **Architecture**
-![Topolgi](Skärmavbild 2026-05-12 kl. 11.09.05.png)
+![Topolgi](topolgy.png)
 ____
 ## **Environment and IP addresses**
 
