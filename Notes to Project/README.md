@@ -321,19 +321,19 @@ ___________
 
 ## **Componence**
 
-### Vagrantfile
+### **Vagrantfile**
 
 Defines six virtual machines in VirtualBox with a private network (_192.168.56.0/24_). Port forwarding from the load-balancing VM maps port 80 to 8080, making the web application reachable from the Windows host. The database server does not have any port forwarding deliberately, to keep it unreachable from outside.
 
-### ansible.cfg
+### **ansible.cfg**
 
 Points to the `inventory.ini` file and enables SSH connections for Ansible control with `host_key_checking = False` (this is only suitable in lab environments). `roles_path = ./roles` to point to the files for the roles.
 
-### Inventory.ini
+### **Inventory.ini**
 
 Groups the different servers into (_Loadbalancing_), (_Database_), (_Webservers_), (_Streaming_), and (_Control_). This is done with IP addresses.
 
-### Site.yml
+### **Site.yml**
 
 Master playbook for Ansible that both points to the `vars/vars.yml` and also couples the roles to the different groups made in the `inventory.ini`.
 
@@ -344,43 +344,36 @@ This file also controles the order in witch the roles are run
 3. webservers - configures both of the webservers vm
 4. loadbaring - configures the loadbaring vm
 
+### **Roll loadbalancer**
+The load balancer role installs and configures Nginx to redirect all traffic to the web servers, this allows the web servers to share the load for the site. It gets the web server IPs from the `inventory.ini` file and the configuration file is `/templates/nginx.conf.j2`.
 
-### Roll loadbalancer
+### **Roll Webservers**
+The web server role installs all the programs listed in `/files/requirements.txt` and configures Gunicorn and Flask. It also uses the Python library SQLAlchemy to connect the database table in `seed.sql` to the Flask `app.py` and the `index.html` that is loaded in the Flask app. This makes the HTML file able to load values from the database with out php code.
 
-Installs nginx and configures the nginx program to route all traffic from the webservers to it. This is done dynamically via the webservers group in `inventory.ini`
-
-### Roll Webservers
-
-Installs Flask and the plugin SQLAlchemy that allows the Flask app to be connected to the database table `seed.sql` that runs on the database VM.
-
-### Roll Streaming
-
+### **Roll Streaming**
 Installs nginx and configures the vm to 
 
-### Roll Database
-
+### **Roll Database**
 Installs PostgreSQL and configures a database table in the `seed.sql` fill
 
-### Flask application (app.py)
-
-
+### **Flask application (app.py)**
 
 ________
 
 ## **Requirements and prerequisites**
 
-#### Programs that must be installed on the Windows host for this project to work.
+#### **Programs that must be installed on the Windows host for this project to work.**
 
 - [VirtualBox ](https://www.virtualbox.org) —
 - [Vagrant](https://developer.hashicorp.com/vagrant) —
 - [Git](https://git-scm.com/install/windows)
 
-### Hardware requirements
+### **Hardware requirements**
 
 - At least 16 GB of RAM (The project uses a total of ~6 GB RAM)
 - At least 20 GB of free disk space
 
-#### Secrets file:
+#### **Secrets file:**
 
 Creates a `secret.yml` file in `vagrant/secrets.yml` based on the template  
 `secrets.example.yml`
@@ -417,7 +410,7 @@ ansible-playbook -i inventory.yml site.yml -v
 bash test/verify.sh
 ```
 
-### Expectations
+### **Expectations**
 Open `https://192.168.52.11` in a browser you should be able to se the website Nitflix and be able to watch the test video on the site. The site should retrive the information that is storde in the database vm where the videos url is stored form the streaming vm.
 
 ---
@@ -436,12 +429,12 @@ There is none
 ---
 ## **Securityanalisys**
 
-### Curent Shortcomings
-#### 1: No firewall rules
+### **Curent Shortcomings**
+#### **1: No firewall rules**
 
-####  2: Unencrypted comunications
+####  **2: Unencrypted comunications**
 
-#### 3: idk
+#### **3: idk**
 
 ____
 
