@@ -221,6 +221,7 @@ Nitflix webpage that allows to play the video (.mp4)
 _________
 
 
+
 # **Streaming service**
 
 > This project is a fully automated simulation of a simple streaming service with six total VMs that are configured via Ansible and created with Vagrant.
@@ -228,37 +229,33 @@ _________
 ______
 ## **Table of contents**
 - [Architecture](#Architecture)
-- [Environment and IP addresses](#EnvironmentandIPaddresses)
-- [Map structure](#Map structure)
+- [Environment and IP addresses](#Environment%20and%20IP%20addresses)
+- [Map structure](#Map%20structure)
 - [Componence](#Componence)
-- [Requirements and prerequisites](#Requirementsandprerequisites)
-- [Geting started ](#Getingstarted)
-- Securityanalisys
-- Validation
-- Design and Architecture
+- [Requirements and prerequisites](#Requirements%20and%20prerequisites)
+- [Geting started](#Geting%20started)
+- [Security](#Security)
+- [Securityanalisys](#Securityanalisys)
+- [Validation](#Validation)
+- [Design and Architecture](#Design%20and%20Architecture)
 
 _________
 ## **Architecture**
-
-![[Streaming.drawio.png]]
-
+![[Skärmavbild 2026-05-12 kl. 11.09.05.png]]
 ____
 ## **Environment and IP addresses**
 
-| VM        | Roll              | IP-address    | port forwarding   | Deskription                                                                             |
-| --------- | ----------------- | ------------- | ----------------- | --------------------------------------------------------------------------------------- |
-| Control   | Ansible Control   | 192.168.56.10 | -                 | Ansible controler handels the installasion of all programs and configurasion on all VMs |
-| LB        | Loadbalancer      | 192.168.56.11 | : 80 -> host 8080 | Nginx routes incoming traffic and load balances it evenly across backend servers.       |
-| web1      | Applikationserver | 192.168.56.12 | -                 | Flask + SQLAlchemy + Gunicorn                                                           |
-| web2      | Applikationserver | 192.168.56.13 | -                 | Flask + SQLAlchemy + Gunicorn                                                           |
-| database  | Databaseserver    | 192.168.56.14 | -                 | postegresSQL                                                                            |
-| streaming | Streamingserver   | 192.168.56.15 | -                 | Nginx                                                                                   |
-|           |                   |               |                   |                                                                                         |
+| VM        | Roll              | IP-address    | port forwarding   | Deskription                                                                                   |
+| --------- | ----------------- | ------------- | ----------------- | --------------------------------------------------------------------------------------------- |
+| Control   | Ansible Control   | 192.168.56.10 | -                 | Ansible controler handels the installasion of all programs and configurasion on all VMs       |
+| LB        | Loadbalancer      | 192.168.56.11 | : 80 -> host 8080 | Nginx routes incoming traffic and load balances it evenly across backend servers.             |
+| web1      | Applikationserver | 192.168.56.12 | -                 | Flask + SQLAlchemy + Gunicorn                                                                 |
+| web2      | Applikationserver | 192.168.56.13 | -                 | Flask + SQLAlchemy + Gunicorn                                                                 |
+| database  | Databaseserver    | 192.168.56.14 | -                 | postegresSQL stores the streaming servers video url and other information liked to the video. |
+| streaming | Streamingserver   | 192.168.56.15 | -                 | Nginx host the video on the streaming server.                                                 |
 
 __________
 ## **Map structure**
-
-
 ```
 repo/
 ├── Pictures/ 
@@ -413,7 +410,7 @@ vagrant up
 vagrant ssh control
 
 # 5. execute the ansible playbook
-cd ~/ITS25-School-project-Load-balanced-Video-Streaming-Server/ansible
+cd ~/home/vagrant/project/ansible
 ansible-playbook -i inventory.yml site.yml -v
 
 # 6. validate
@@ -426,7 +423,7 @@ Open `https://192.168.52.11` in a browser you should be able to se the website N
 ---
 ## **Secrets**
 
-The file `/vagrant/secrets.yml` must be created locally and is never committed to GitHub because it containes sensetive infromation like passwords, and there for  it's exempted to be commited to Github via the `.gitignore file.
+The file `/vagrant/secrets.yml` must be created locally and is never committed to GitHub because it contains sensitive information like passwords, and is therefore excluded from being committed to GitHub via the `.gitignore` file.
 
 Copy the variables from the example secrets file and fill in real values.
 
@@ -446,31 +443,51 @@ There is none
 
 #### 3: idk
 
-
-
 ____
 
 ## **Validation**
 
-To vallidate that every thing is working corecly run the automated validations skript 
+To validate that everything is working correctly, run the automated validation script.
 
 ```bash
 Bash ansible/test/verify.sh
 ```
-The script validates the following
 
+The script validates the following
+- That Ansible pings all the VMs
+- That Nginx answers on the load balancing port `80`
+- That Flask answers on both web servers on port `5000`
+- That round-robin works (two calls give different host names)
+- That the database is available from the control node
+- That the streaming server answers on port `80`
+- That Flask returns HTML (and not a 500 error)
+- That the systemd services are running on the correct VMs
 
 ____
 
 ## **Design and Architecture**
 
+### Why are there two web servers and a load balancer? 
+If we had only used one web server and no load balancer, that would have made the project easier, but we decided to add some more complexity by doing that to simulate how a real streaming service is set up. We also could have added another streaming server and a load balancer to have something even more like a real streaming service, but we decided not to do that.
 
+The setup also allows one of the web servers to be taken down by, for example, a cyber attack without completely shutting down the site.
 
+### Why do we have a separate streaming server and not just use the database?
+By having a separate streaming server, it makes scaling the operation easier, as databases are quite hard to scale and it does not put unnecessary strain on the database when the site is in use. Databases are also quite bad at serving large files, which can result in the site becoming slower.
 
+It may also add some extra layers of protection to both the streaming server and database when configured correctly.
+
+### Why do we use Gunicorn and SQLAlchemy? 
+Gunicorn, or **Green Unicorn**, is a Python based web server program that works with Flask. Gunicorn can handle multiple requests at the same time and allows for multiple workers on the same CPU core, making it generally faster and more reliable than just a Flask application. Gunicorn sits in front of the Flask application, allowing you to use a normal Flask application with Gunicorn to gain its benefits. There for we decided to use it in oure project to make the Flask application faster and more reliable.
+
+SQLAlchemy is a Python based library that allows you to use Python code to interact with a database instead of using raw SQL queries. We use SQLAlchemy to allow the Flask application to request the necessary information from the database VM, like video title, views, and the streaming URL. 
+
+Flask does not allow you to natively use a SQL database, so either way we would have needed a library, but we decided on SQLAlchemy because it uses Python code and not SQL code, and we are better at Python than SQL.
 
 ____
 *Skapad av: [Anton Hagman, William Åström]*  
 *Kurs: Virtualiseringsteknik*  
 *Datum: [2026-05-12]*
+
 
 
