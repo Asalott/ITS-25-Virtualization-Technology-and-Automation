@@ -350,11 +350,26 @@ The load balancer role installs and configures Nginx to redirect all traffic to 
 ### **Roll Webservers**
 The web server role installs all the programs listed in `/files/requirements.txt` and configures Gunicorn and Flask. It also uses the Python library SQLAlchemy to connect the database table in `seed.sql` to the Flask `app.py` and the `index.html` that is loaded in the Flask app. This makes the HTML file able to load values from the database with out php code.
 
-### **Roll Streaming**
-Installs nginx and configures the vm to 
+### Roll Streaming
+The streaming role installs and configures Nginx for the purpose of acting as a streaming server. It listens on port `80` and uses the `Accept-Ranges bytes` header which allows the browser to request the video in small chunks, enabling the video to play while it is still loading. It creates a folder called `/var/www/videos` where all the videos are stored, and all files placed in that folder become available to stream if they are the correct format.
 
-### **Roll Database**
-Installs PostgreSQL and configures a database table in the `seed.sql` fill
+### Roll Database
+The database role installs PostgreSQL and creates a database table with the `seed.sql` file with these columns:
+
+- `id` SERIAL PRIMARY KEY
+- `videotitle` VARCHAR(255) NOT NULL
+- `filepath` VARCHAR(255) NOT NULL
+- `uploadeddate` DATE NOT NULL
+- `views` INTEGER DEFAULT 0
+
+In the `seed.sql` file the permissions are also set so the web servers can access the table. The information inserted into the table is:
+
+- `videotitle` How to Nitflix and Chill
+- `filepath` [http://192.168.56.15/videos/nitflix.mp4](http://192.168.56.15/videos/nitflix.mp4)
+- `uploadeddate` 1969-07-06
+- `views` 67
+
+The reason no `id` is inserted is because the `id` column in a SQL database often uses auto increment, meaning the value increases by itself. If a database table already exists it does nothing.
 
 ### **Flask application (app.py)**
 
