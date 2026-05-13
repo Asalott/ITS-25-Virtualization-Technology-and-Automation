@@ -245,7 +245,7 @@ Database credentials (db_user and db_password) are stored in secrets.yml, which 
 All VMs communicate over an isolated host-only network (192.168.56.0/24). The database VM has no port forwarding and is not reachable from outside the private network. Access to the database is restricted at the application level through PostgreSQL's pg_hba.conf, which only permits authenticated connections from within the subnet. Note that no firewall (UFW) is configured — all ports are currently open between VMs on the internal network. This is identified as a security gap in the Security Analysis section.
 
 #### **SSH key-based authentication**
-The Ansible control node authenticates to all other VMs using an ed25519 key pair generated automatically at boot. Password-based SSH authentication is never used. *Note that host_key_checking = False is set in ansible.cfg — read Shortcoming 5 in the next part for more information about this.
+The Ansible control node authenticates to all other VMs using an ed25519 key pair generated automatically at boot. Password-based SSH authentication is never used. *Note that host_key_checking = False is set in ansible.cfg — read Shortcoming 6 in the next part for more information about this.
 
 #### **Service isolation**
 Each service runs on a dedicated VM. If a web server is compromised, the attacker does not have direct access to the database or streaming server.
