@@ -475,7 +475,7 @@ The file should be available via on the control node via the shard vagrant folde
 There is none
 
 ---
-## **Securityanalisys**
+## **Security Analysis**
 
 ### Remaining shortcomings
 #### **shortcomings 1: No firewall rules**
@@ -484,13 +484,12 @@ The project currently has no firewall rules, meaning the Windows host can commun
 To mitigate this, firewall rules should be implemented to restrict direct access to the streaming and database VMs from outside the internal network.
 
 This risk is accepted because this is a lab environment and is only meant to demonstrate how a basic streaming service is structured, but if we had had more time we would definitely have added at least basic firewall rules to the project.
-####  ** shortcomings 2:  No DRM protection**
+####  **shortcomings 2:  No DRM protection**
 The current streaming server does not have DRM protection for the videos, making it possible for anyone to go into the site and download the source file directly from the streaming VM, making it quite easy to steal the hosted content.
 
 To mitigate this we could implement token-based URL signing, which is available in Nginx. However this is not used on real streaming servers as they use more complex solutions like Google Widevine or Apple FairPlay. Token-based URL signing would still make it significantly harder to simply download the source video directly.
 
 This risk is accepted because this is a lab environment and is only meant to demonstrate how a basic streaming service is structured, if we hade had more time we would have added token-based URL signing with Nginx for basic DRM protection.
-
 #### **shortcomings 3: There is no monitoring**
 The current system does not have a monitoring program to detect suspicious network traffic or attacks such as DoS attacks or unauthorized access attempts.
 
