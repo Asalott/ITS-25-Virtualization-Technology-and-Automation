@@ -20,7 +20,7 @@ ______
 
 _________
 ## **Architecture**
-![Topolgi](topolgy.png)
+![Topology](topolgy.png)
 ____
 ## **Environment and IP addresses**
 
@@ -41,7 +41,7 @@ repo/
 │   └── Topology.png                    # Network topology diagram showing VM layout
 │
 ├── Vagrant/
-│   ├── Vagrantfile                     # Definens and creats all VMs, runs provision scripts
+│   ├── Vagrantfile                     # Defines and creates all VMs, runs provision scripts
 │   └── nitflix.mp4	                    # Video file copied to streaming VM on boot
 │
 ├── ansible/
@@ -174,8 +174,8 @@ ________
 
 #### **Programs that must be installed on the Windows host for this project to work.**
 
-- [VirtualBox ](https://www.virtualbox.org) — Tested using version X.X
-- [Vagrant](https://developer.hashicorp.com/vagrant) — Tested useing version X.X
+- [VirtualBox ](https://www.virtualbox.org) — Tested using version 7.2.6 r172322
+- [Vagrant](https://developer.hashicorp.com/vagrant) — Tested using version 2.4.9
 - [Git](https://git-scm.com/install/windows)
 
 ### **Hardware requirements**
@@ -185,14 +185,14 @@ ________
 
 #### **Secrets file:**
 
-Creates a `secret.yml` file in `vagrant/secrets.yml` based on the template  
+Creates a `secrets.yml` file in `vagrant/secrets.yml` based on the template  
 `secrets.example.yml`
 
 ________
 
 ## **Getting started**
 ```bash
-# 1. clone the github repo vi ether ssh or https
+# 1. clone the github repo via either ssh or https
 
 # ssh
 git clone  git@github.com:A-Hagman/ITS25-School-project-Load-balanced-Video-Streaming-Server.git
@@ -200,30 +200,30 @@ git clone  git@github.com:A-Hagman/ITS25-School-project-Load-balanced-Video-Stre
 # https
 git clone https://github.com/A-Hagman/ITS25-School-project-Load-balanced-Video-Streaming-Server.git
 
-cd ITS25-School-project-Load-balanced-Video-Streaming-Server
+cd "ITS25-School-project-Load-balanced-Video-Streaming-Server"
 
-# 2. creat the secrets-file
-creat an secrets.yml based on the secrets.example.yml file
+# 2. create the secrets-file
+create a secrets.yml based on the secrets.example.yml file
 
 # 3. start all of the VMs
-cd vargrant 
+cd vagrant 
 vagrant up
 
 # 4. ssh into the ansible controlnode
 vagrant ssh control
 
 # 5. execute the ansible playbook
-cd ~/home/vagrant/project/ansible
-ansible-playbook -i inventory.yml site.yml -v
+cd /home/vagrant/project/ansible
+ansible-playbook site.yml -v
 
 # 6. validate
-cd home/vagrant/project/ansible
+cd /home/vagrant/project/ansible
 
 ./verify.sh
 ```
 
 ### **Expectations**
-Open `https://192.168.52.11` in a browser you should be able to se the website Nitflix and be able to watch the test video on the site. The site should retrive the information that is storde in the database vm where the videos url is stored form the streaming vm.
+Open `http://192.168.56.11` in a browser. You should be able to see the website Nitflix and be able to watch the test video on the site. The site should retrieve the information that is stored in the database VM where the videos url is stored from the streaming VM.
 
 ---
 ## **Secrets**
@@ -232,7 +232,7 @@ The file `/vagrant/secrets.yml` must be created locally and is never committed
 
 Copy the variables from the example secrets file and fill in real values.
 
-The file should be available via on the control node via the shard vagrant folder .`vagrant`.
+The file should be available via on the control node via the shared vagrant folder .`vagrant`.
 
 ---
 ## **Security**
@@ -383,7 +383,7 @@ By having a separate streaming server, it makes scaling the operation easier, as
 It may also add some extra layers of protection to both the streaming server and database when configured correctly.
 
 ### **Why do we use Gunicorn and SQLAlchemy?** 
-Gunicorn, or **Green Unicorn**, is a Python based web server program that works with Flask. Gunicorn can handle multiple requests at the same time and allows for multiple workers on the same CPU core, making it generally faster and more reliable than just a Flask application. Gunicorn sits in front of the Flask application, allowing you to use a normal Flask application with Gunicorn to gain its benefits. There for we decided to use it in oure project to make the Flask application faster and more reliable.
+Gunicorn, or **Green Unicorn**, is a Python based web server program that works with Flask. Gunicorn can handle multiple requests at the same time and allows for multiple workers on the same CPU core, making it generally faster and more reliable than just a Flask application. Gunicorn sits in front of the Flask application, allowing you to use a normal Flask application with Gunicorn to gain its benefits. Therefore we decided to use it in our project to make the Flask application faster and more reliable.
 
 SQLAlchemy is a Python based library that allows you to use Python code to interact with a database instead of using raw SQL queries. We use SQLAlchemy to allow the Flask application to request the necessary information from the database VM, like video title, views, and the streaming URL. 
 
@@ -412,7 +412,7 @@ ___
 ## 03-added-.gitignore
      - Added working .gitignore-file
  
-## 04-added-rest-of-vm-ta-vafrantfile
+## 04-added-rest-of-vm-to-vagrantfile
      - Added control vm, Loadbaring vm, Database vm and streaming vm
  
 ## 05-asnible-file-strukter
@@ -524,6 +524,7 @@ This resulted in working pings between Control to all VMs! This concludes this b
      - Updated tasks/main.yml with remove default site
      - Added /handlers/main.yml
      - Added /templates/nginx.conf.j2
+     - Changed all "Loadbaring"-names to "Loadbalancer"
 
 ## 09-Webbserver-1-VM 
 Clarification: This branch is for both webserver1 and webserver2
@@ -549,7 +550,7 @@ ansible-playbook site.yml -v
 ansible webservers -m command -a "systemctl status flask"
 ```
 
-  **Test throught loadbalancer**
+  **Test through loadbalancer**
   ```
 curl http://192.168.56.11/
 curl http://192.168.56.11/health
@@ -604,7 +605,7 @@ curl http://192.168.56.11/
 Nitflix HTML page with the video player
 ```
 
-  **Verify thought web browser**
+  **Verify through web browser**
 ```
 http://192.168.56.11
 ```
@@ -672,7 +673,7 @@ Nitflix webpage that allows to play the video (.mp4)
  
 ## 13-Clean-up
      - Removed /roles/control-map due to not being used
-     - Translated all language to Engling
+     - Translated all language to English
      - Added comments on some files that needed extra clarifications
      - Changed section/test 4 in the verification script to better visualize the curl command (round-robin) working
      - Removed /health from /roles/loadbalancer/templates/nginx.conf.j2 due to it creating errors on test 4 when running verification script
