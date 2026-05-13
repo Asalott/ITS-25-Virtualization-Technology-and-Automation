@@ -225,11 +225,24 @@ The file should be available via on the control node via the shard vagrant folde
 
 ---
 ## **Security**
-There is none
+
+#### **Principle of Least Privilege (database)**
+The database user "nitflix_user" is granted only SELECT permissions on the videos table. The Flask application cannot write, modify or delete data in the database — even if the application were to be compromised, an attacker would have read-only access to the video metadata.
+
+#### **Secrets management**
+Database credentials (db_user and db_password) are stored in secrets.yml, which is excluded from version control via .gitignore. A secrets.example.yml file is committed instead, showing the required structure without exposing real values. This prevents sensitive information from being stored in the Git history.
+
+#### **Private network and network segmentation**
+All VMs communicate over an isolated host-only network (192.168.56.0/24). The database VM has no port forwarding and is not reachable from outside the private network. Access to the database is restricted at the application level through PostgreSQL's pg_hba.conf, which only permits authenticated connections from within the subnet. Note that no firewall (UFW) is configured — all ports are currently open between VMs on the internal network. This is identified as a security gap in the Security Analysis section.
+
+#### **SSH key-based authentication**
+The Ansible control node authenticates to all other VMs using an ed25519 key pair generated automatically at boot. Password-based SSH authentication is never used. *Note that host_key_checking = False is set in ansible.cfg — read the next part "remaining shortcomings" for more info about this.
+
+#### **Service isolation**
+Each service runs on a dedicated VM. If a web server is compromised, the attacker does not have direct access to the database or streaming server.
 
 ---
 ## **Security Analysis**
-
 ### Remaining shortcomings
 #### **shortcomings 1: No firewall rules**
 The project currently has no firewall rules, meaning the Windows host can communicate directly with both the streaming VM and the database VM. This is not ideal as it could allow an attacker to manipulate or steal data stored on those servers.
