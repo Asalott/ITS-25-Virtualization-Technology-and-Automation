@@ -423,7 +423,7 @@ cd ~/home/vagrant/project/ansible
 ansible-playbook -i inventory.yml site.yml -v
 
 # 6. validate
-bash test/verify.sh
+bash ./verify.sh
 ```
 
 ### **Expectations**
