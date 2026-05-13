@@ -155,7 +155,14 @@ The Flask application is simple with two endpoints:
 - `/` Returns the `index.html` file that contains the entire website.
 - `/health` Simple health check for the Flask application.
 
-The Flask application also uses the SQLAlchemy Python library to connect the database table to the Flask application. This is done via the `os.environ.get` command and the variables are stored in the `vars/vars.yml` and `secrets.yml` files. There is also a fallback hardcoded variable in `DB_HOST`, so in the case that the `db_host` variable is somehow empty it falls back to `192.168.56.14`, which is the IP address of the database VM.
+The Flask application also uses the SQLAlchemy Python library to connect the database table to the Flask application. This is done via the 
+
+`app.config["SQLALCHEMY_DATABASE_URI"] = (
+    f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}"
+)
+db = SQLAlchemy(app)` 
+
+Command and the variables are stored in the `vars/vars.yml` and `secrets.yml` files. There is also a fallback hardcoded variable in `DB_HOST`, so in the case that the `db_host` variable is somehow empty it falls back to `192.168.56.14`, which is the IP address of the database VM.
 
 ________
 
@@ -268,8 +275,12 @@ The current architecture has a single point of failure on the streaming server, 
 To mitigate this risk, a load balancing VM and an additional streaming server VM could be implemented, so that one VM can go down without the entire service stopping. If possible, a failover load balancing VM could also be added for both the web server VMs and streaming server VMs to make the system even more redundant.
 
 This risk is accepted because this is a lab environment and is only meant to demonstrate how a basic streaming service is structured, and because we did not have the resources to run all those VMs.
+#### **shortcomings 5:  Only one Streaming server**
+Currently we have `host_key_checking = False` which allows the Ansible controller to reach the other VMs. Without it the Ansible controller could not reach them because its SSH key could not be verified, as we do not have a certificate authority to verify the SSH keys.
 
+To mitigate this risk we would have to set up a certificate authority VM in this lab environment to authenticate the SSH keys of the VMs.
 
+This risk is accepted and deliberate because this is a lab environment and is only meant to demonstrate how a basic streaming service is structured and not how a certificate authority works, and because without it the Ansible controller cannot reach the other VMs.
 ____
 
 ## **Validation**
