@@ -6,15 +6,15 @@ ______
 ## **Table of contents**
 - [Architecture](#Architecture)
 - [Environment and IP addresses](#Environment-and-IP-addresses)
-- [Map structure](#Map%20structure)
+- [Map structure](#Map-structure)
 - [Componence](#Componence)
-- [Requirements and prerequisites](#Requirements%20and%20prerequisites)
-- [Geting started](#Geting%20started)
+- [Requirements and prerequisites](#Requirements-and-prerequisites)
+- [Getting started](#Getting-started)
 - [Security](#Security)
-- [Securityanalisys](#Securityanalisys)
+- [Security Analysis](#Security-Analysis)
 - [Validation](#Validation)
-- [Design and Architecture](#Design%20and%20Architecture)
-- [Branch- and patchnotes](#Branch-andpatchnotes)
+- [Design and Architecture](#Design-and-Architecture)
+- [Branch- and Patchnotes](#Branch--and-Patchnotes)
 
 _________
 ## **Architecture**
@@ -179,7 +179,7 @@ Creates a `secret.yml` file in `vagrant/secrets.yml` based on the template
 
 ________
 
-## **Geting started**
+## **Getting started**
 ```bash
 # 1. clone the github repo vi ether ssh or https
 
@@ -350,7 +350,7 @@ ____
 
 ___
 
-## *Branch- and patchnotes*
+## *Branch- and Patchnotes*
 
 ## 01-added-vagrantfile
      - Created empty vagrant file
