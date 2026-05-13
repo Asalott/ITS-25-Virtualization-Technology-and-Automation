@@ -1,292 +1,3 @@
-# ITS25-School-project-Load-balanced-Video-Streaming-Server
- The project implements a scalable video streaming service where clients connect to a load balancer that distributes traffic to multiple web servers. Each web server delivers video content, while a separate backend server stores media files. The architecture is partitioned to enable high availability and resource isolation.
-
-## Toplogy for the project
-![Topology](/Pictures/Topology.png)
-
-# Branch- and patchnotes
-
-## 01-added-vagrantfile
-     - Created empty vagrant file
- 
-## 02-added-webserver-vm-1-and-2
-     - Webserver 1 and 2 added to vagrant file
- 
-## 03-added-.gitignore
-     - Added working .gitignore-file
- 
-## 04-added-rest-of-vm-ta-vafrantfile
-     - Added control vm, Loadbaring vm, Database vm and streaming vm
- 
-## 05-asnible-file-strukter
-     - Added ansible files needed for basic functions
- 
-     pic eller nått över filstrukturen idk
- 
-## 06-add-gitclone-to-vagrantfile
-     - Added gitclone code to vagrant file
- 
-## 07-added-inventory.ini
-     - Added inventory.ini with ip-adresses and ssh-key adress
-     - # Added in vagrant file to pull branch 07
-       git clone -b 07-added-inventory.ini https://github.com/A-Hagman/ITS25-School-project-Load-balanced-Video-Streaming-Server.git /home/vagrant/project
-### Tested with:
-
-**In powershell:**
- 
-*vagrant ssh control*
-*vagrant@control:~$ cd "/home/vagrant/project/ansible"*
- 
-*vagrant@control:~/project/ansible$ ssh-keyscan -H 192.168.56.11 >> ~/.ssh/known_hosts*
-*vagrant@control:~/project/ansible$ ssh-keyscan -H 192.168.56.12 >> ~/.ssh/known_hosts*
-*vagrant@control:~/project/ansible$ ssh-keyscan -H 192.168.56.13 >> ~/.ssh/known_hosts*
-*vagrant@control:~/project/ansible$ ssh-keyscan -H 192.168.56.14 >> ~/.ssh/known_hosts*
-*vagrant@control:~/project/ansible$ ssh-keyscan -H 192.168.56.15 >> ~/.ssh/known_hosts*
- 
-*vagrant@control:~/project/ansible$ ansible all -i inventory.ini -m ping*
- 
-### Expected results:
- 
-192.168.56.11 | SUCCESS => {
-    "ansible_facts": {
-        "discovered_interpreter_python": "/usr/bin/python3"
-    },
-    "changed": false,
-    "ping": "pong"
-}
-
-192.168.56.12 | SUCCESS => {
-    "ansible_facts": {
-        "discovered_interpreter_python": "/usr/bin/python3"
-    },
-    "changed": false,
-    "ping": "pong"
-}
-
-192.168.56.13 | SUCCESS => {
-    "ansible_facts": {
-        "discovered_interpreter_python": "/usr/bin/python3"
-    },
-    "changed": false,
-    "ping": "pong"
-}
-
-192.168.56.15 | SUCCESS => {
-    "ansible_facts": {
-        "discovered_interpreter_python": "/usr/bin/python3"
-    },
-    "changed": false,
-    "ping": "pong"
-}
-
-192.168.56.14 | SUCCESS => {
-    "ansible_facts": {
-        "discovered_interpreter_python": "/usr/bin/python3"
-    },
-    "changed": false,
-    "ping": "pong"
-}
-
-### Comment(s):
- 
-We had to ssh-keyscan to avoid the system asking "Are you sure you want to continue connecting (yes/no/[fingerprint])?" for each ping which caused the system to hang after the first ping. To avoid this we will add this code in the vagrant file after the key has been generated but before the ansible-playbook runs:
- 
-**Wait for each VM to come online before adding to known_hosts**   
-for ip in 192.168.56.11 192.168.56.12 192.168.56.13 192.168.56.14 192.168.56.15; do
-      echo "Väntar på $ip..."
-      until nc -z -w 3 $ip 22; do
-         sleep 3 
-      done 
-      ssh-keyscan -H $ip >> /home/vagrant/.ssh/known_hosts
-    done
-    chown vagrant:vagrant /home/vagrant/.ssh/known_hosts
- 
- 
-We will also add netcat to automatically install to enable the loop to work:
- 
-**Installs Ansible and Github-git on boot up**      
-apt-get install -y ansible git netcat-openbsd
- 
- 
-Another solution would be to change the inventory.ini-file to not enable "StrictHostKeyChecking", which automatically accepts all hostkeys without asking. This would solve the same problem, but that would also compromise the security due to disabling the SSH-keyverification permanently. The known_host solution is saving the keys during start-up and if the keys changes och gets manupilated the SSH will alarm - which is much safer.
- 
- 
-### UPDATE:
-Due to problems with the loop not finding the VMs after creating the control node we changed to using vagrants SSH-keys instead of our own. This led to changes in both the vagrant file and the inventory.ini.
- 
-We removed the key-generating code in Vagrant aswell as moving the creation of the control to run last. The loop we added earlier we deemed unnecessary if we're working with vagrants own keys. We added paths to Vagrants keys in the inventory.ini.
-
-### UPDATE 2:
-The last changes did not work and after consulting the teacher we opted for "Host_key_checking = False" in the inventory.ini. This is not a "safe" method bud is will help us with the problem that occured when pinging. We also went back to using our own SSH-keys.
-
-### UPDATE 3 (Final):
-The "Host_key_checking = False" was not supposed to be in inventory.ini, it was supposed to be in the ansible.cfg. We moved the code to the right file. Added "ansible_python_interpreter=/usr/bin/python3" to the inventory.ini to specify what version of python we are using. We also corrected some big and small letters, added "chmod 755 /home/vagrant/project" and removed the "export ANSIBLE_CONFIG=/path/to/ansible.cfg" cause it was both typed wrong and does not help us cause we are mixing both Windows and Ubuntu.
-
-This resulted in working pings between Control to all VMs! This concludes this branch.
-
-## 08-Loadbalancer-VM
-     - Updated tasks/main.yml with remove default site
-     - Added /handlers/main.yml
-     - Added /templates/nginx.conf.j2
-
-## 09-Webbserver-1-VM 
-Clarification: This branch is for both webserver1 and webserver2
-
-     - Created roles/webserver/files/requirements.txt
-     - Created roles/webserver/files/app.py 
-       (simplified version to test functionality - it will only return hostname to verify loadbalancer without a database)
-     - Created roles/webserver/tasks/main.yml
-     - Created roles/webserver/templates/flask.service.j2
-     - Created roles/webserver/handlers/main.yml
-     - Updated site.yml to include webservers
-
-### Verification:
-  **Run playbook**
-  ```
-ansible-playbook site.yml -v
-```
-
-  *failed=0 after playbook is running*
-
-  **Check if flask is active on webserver1**
-  ```
-ansible webservers -m command -a "systemctl status flask"
-```
-
-  **Test throught loadbalancer**
-  ```
-curl http://192.168.56.11/
-curl http://192.168.56.11/health
-  ```
-
-  *Expected result:*
- ```
-<h1>Hej fran webserver1!</h1>
-{"hostname": "webserver1", "status": "ok"}
-```
-
-## 10-Database-VM
-     - Created roles/database/files/seed.sql
-     - Created roles/database/tasks/main.yml
-     - Created roles/database/handlers/main.ym
-     - Replaced roles/webserver/files/app.py with the full version that uses SQLAlchemy
-     - Updated roles/webserver/templates/flask.service.j2 with database details in Environment.
-       (this refers to /vars/vars.yml and /vars/secrets.yml)
-     - Updated site.yml to include the database (running first)
-     - Added code to vagrant file to copy secrets.yml from /vagrant/ to
-       /home/vagrant/project/ansible/vars/secrets.yml
-
-## 11-Streaming-VM
-     - Created roles/streaming/tasks/main.yml
-     - Created roles/streaming/handlers/main.yml
-     - Created roles/streaming/templates/nginx.conf.j2
-     - Updated site.yml to include the streaming VM
-     - Added code to vagrant file to create /var/www/videos and copy the .mp4-file from /vagrant/
-
- ### Verification:
-  **Run playbook**
-  ```
-ansible-playbook site.yml -v
-```
-
-  **Verify that the streaming-server is serving files**
-  ```
-curl -I http://192.168.56.15/videos/nitflix.mp4
-```
-*Expected result:*
-```
-HTTP/1.1 200 OK
-Content-Type: video/mp4
-```
-
-  **Verify the entire chain via the loadbalancer**
-  ```
-curl http://192.168.56.11/
-```
-*Expected result:*
-```
-Nitflix HTML page with the video player
-```
-
-  **Verify thought web browser**
-```
-http://192.168.56.11
-```
-*Expected result:*
-```
-Nitflix webpage that allows to play the video (.mp4)
-```
-
-## 12-Verification-Script
-     - Added verification script (/ansible/verify.sh)
-     - Changed vagrant file to allow access to /ansible/verify.sh
-
-### Verification:
-  **After running playbook, run:**
-  ```
-./verify.sh
-```
-
-*Expected result:*
-
-```
-══ 1. Ansible connection (ping) ══
-[OK]   Ansible ping → 192.168.56.11
-[OK]   Ansible ping → 192.168.56.12
-[OK]   Ansible ping → 192.168.56.13
-[OK]   Ansible ping → 192.168.56.14
-[OK]   Ansible ping → 192.168.56.15
-
-══ 2. Systemd services ══
-[OK]   flask.service active → 192.168.56.12
-[OK]   flask.service active → 192.168.56.13
-[OK]   nginx.service active → 192.168.56.11
-[OK]   nginx.service active → 192.168.56.15
-[OK]   postgresql.service active → 192.168.56.14
-
-══ 3. HTTP-response from Flask (webbservers) ══
-[OK]   Flask /health HTTP 200 → 192.168.56.12:5000
-[OK]   Flask /health HTTP 200 → 192.168.56.13:5000
-
-══ 4. Load balancing (round-robin) ══
-[INFO] Curl 1 → webserver1 (192.168.56.12)
-[INFO] Curl 2 → webserver2 (192.168.56.13)
-[INFO] Curl 3 → webserver1 (192.168.56.12)
-[INFO] Curl 4 → webserver2 (192.168.56.13)
-[OK]   Round-robin confirmed — responses alternate between servers
-
-══ 5. HTML-response via the load balancer ══
-[OK]   Loadbaring returns HTTP 200
-[OK]   HTML contain 'Nitflix'
-
-══ 6. Database accessible from web servers ══
-[OK]   PostgreSQL port 5432 reachable from webserver1
-
-══ 7. Streaming server ══
-[OK]   Video file available on the streaming server (HTTP 200)
-
-══ Summary ══
-
-  Approved:    17 / 17
-  Failed:  0 / 17
-
- All checks passed — Nitflix is ready!
-```
- Note: *This is after changes in branch 13-Clean-up to better visualize round-robin*
- 
-## 13-Clean-up
-     - Removed /roles/control-map due to not being used
-     - Translated all language to Engling
-     - Added comments on some files that needed extra clarifications
-     - Changed section/test 4 in the verification script to better visualize the curl command (round-robin) working
-     - Removed /health from /roles/loadbalancer/templates/nginx.conf.j2 due to it creating errors on test 4 when running verification script
-     - Changed clone-location in vagrant file to main instead of this branch before final merge with main
-
-# Readme
-_________
-
-
-
 # **Streaming service**
 
 > This project is a fully automated simulation of a simple streaming service with six total VMs that are configured via Ansible and created with Vagrant.
@@ -303,6 +14,7 @@ ______
 - [Securityanalisys](#Securityanalisys)
 - [Validation](#Validation)
 - [Design and Architecture](#Design%20and%20Architecture)
+- [Branch- and patchnotes](#Branch-%20and%20patchnotes)
 
 _________
 ## **Architecture**
@@ -636,5 +348,282 @@ ____
 *Kurs: Virtualiseringsteknik*  
 *Datum: [2026-05-12]*
 
+___
 
+## *Branch- and patchnotes*
+
+## 01-added-vagrantfile
+     - Created empty vagrant file
+ 
+## 02-added-webserver-vm-1-and-2
+     - Webserver 1 and 2 added to vagrant file
+ 
+## 03-added-.gitignore
+     - Added working .gitignore-file
+ 
+## 04-added-rest-of-vm-ta-vafrantfile
+     - Added control vm, Loadbaring vm, Database vm and streaming vm
+ 
+## 05-asnible-file-strukter
+     - Added ansible files needed for basic functions
+ 
+## 06-add-gitclone-to-vagrantfile
+     - Added gitclone code to vagrant file
+ 
+## 07-added-inventory.ini
+     - Added inventory.ini with ip-adresses and ssh-key adress
+     - # Added in vagrant file to pull branch 07
+       git clone -b 07-added-inventory.ini https://github.com/A-Hagman/ITS25-School-project-Load-balanced-Video-Streaming-Server.git /home/vagrant/project
+
+### Tested with:
+
+**In powershell:**
+ 
+*vagrant ssh control*
+*vagrant@control:~$ cd "/home/vagrant/project/ansible"*
+ 
+*vagrant@control:~/project/ansible$ ssh-keyscan -H 192.168.56.11 >> ~/.ssh/known_hosts*
+*vagrant@control:~/project/ansible$ ssh-keyscan -H 192.168.56.12 >> ~/.ssh/known_hosts*
+*vagrant@control:~/project/ansible$ ssh-keyscan -H 192.168.56.13 >> ~/.ssh/known_hosts*
+*vagrant@control:~/project/ansible$ ssh-keyscan -H 192.168.56.14 >> ~/.ssh/known_hosts*
+*vagrant@control:~/project/ansible$ ssh-keyscan -H 192.168.56.15 >> ~/.ssh/known_hosts*
+ 
+*vagrant@control:~/project/ansible$ ansible all -i inventory.ini -m ping*
+ 
+### Expected results:
+ 
+192.168.56.11 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+
+192.168.56.12 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+
+192.168.56.13 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+
+192.168.56.15 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+
+192.168.56.14 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+
+### Comment(s):
+ 
+We had to ssh-keyscan to avoid the system asking "Are you sure you want to continue connecting (yes/no/[fingerprint])?" for each ping which caused the system to hang after the first ping. To avoid this we will add this code in the vagrant file after the key has been generated but before the ansible-playbook runs:
+ 
+**Wait for each VM to come online before adding to known_hosts**   
+for ip in 192.168.56.11 192.168.56.12 192.168.56.13 192.168.56.14 192.168.56.15; do
+      echo "Väntar på $ip..."
+      until nc -z -w 3 $ip 22; do
+         sleep 3 
+      done 
+      ssh-keyscan -H $ip >> /home/vagrant/.ssh/known_hosts
+    done
+    chown vagrant:vagrant /home/vagrant/.ssh/known_hosts
+ 
+ 
+We will also add netcat to automatically install to enable the loop to work:
+ 
+**Installs Ansible and Github-git on boot up**      
+apt-get install -y ansible git netcat-openbsd
+ 
+ 
+Another solution would be to change the inventory.ini-file to not enable "StrictHostKeyChecking", which automatically accepts all hostkeys without asking. This would solve the same problem, but that would also compromise the security due to disabling the SSH-keyverification permanently. The known_host solution is saving the keys during start-up and if the keys changes och gets manupilated the SSH will alarm - which is much safer.
+ 
+ 
+### UPDATE:
+Due to problems with the loop not finding the VMs after creating the control node we changed to using vagrants SSH-keys instead of our own. This led to changes in both the vagrant file and the inventory.ini.
+ 
+We removed the key-generating code in Vagrant aswell as moving the creation of the control to run last. The loop we added earlier we deemed unnecessary if we're working with vagrants own keys. We added paths to Vagrants keys in the inventory.ini.
+
+### UPDATE 2:
+The last changes did not work and after consulting the teacher we opted for "Host_key_checking = False" in the inventory.ini. This is not a "safe" method bud is will help us with the problem that occured when pinging. We also went back to using our own SSH-keys.
+
+### UPDATE 3 (Final):
+The "Host_key_checking = False" was not supposed to be in inventory.ini, it was supposed to be in the ansible.cfg. We moved the code to the right file. Added "ansible_python_interpreter=/usr/bin/python3" to the inventory.ini to specify what version of python we are using. We also corrected some big and small letters, added "chmod 755 /home/vagrant/project" and removed the "export ANSIBLE_CONFIG=/path/to/ansible.cfg" cause it was both typed wrong and does not help us cause we are mixing both Windows and Ubuntu.
+
+This resulted in working pings between Control to all VMs! This concludes this branch.
+
+## 08-Loadbalancer-VM
+     - Updated tasks/main.yml with remove default site
+     - Added /handlers/main.yml
+     - Added /templates/nginx.conf.j2
+
+## 09-Webbserver-1-VM 
+Clarification: This branch is for both webserver1 and webserver2
+
+     - Created roles/webserver/files/requirements.txt
+     - Created roles/webserver/files/app.py 
+       (simplified version to test functionality - it will only return hostname to verify loadbalancer without a database)
+     - Created roles/webserver/tasks/main.yml
+     - Created roles/webserver/templates/flask.service.j2
+     - Created roles/webserver/handlers/main.yml
+     - Updated site.yml to include webservers
+
+### Verification:
+  **Run playbook**
+  ```
+ansible-playbook site.yml -v
+```
+
+  *failed=0 after playbook is running*
+
+  **Check if flask is active on webserver1**
+  ```
+ansible webservers -m command -a "systemctl status flask"
+```
+
+  **Test throught loadbalancer**
+  ```
+curl http://192.168.56.11/
+curl http://192.168.56.11/health
+  ```
+
+  *Expected result:*
+ ```
+<h1>Hej fran webserver1!</h1>
+{"hostname": "webserver1", "status": "ok"}
+```
+
+## 10-Database-VM
+     - Created roles/database/files/seed.sql
+     - Created roles/database/tasks/main.yml
+     - Created roles/database/handlers/main.ym
+     - Replaced roles/webserver/files/app.py with the full version that uses SQLAlchemy
+     - Updated roles/webserver/templates/flask.service.j2 with database details in Environment.
+       (this refers to /vars/vars.yml and /vars/secrets.yml)
+     - Updated site.yml to include the database (running first)
+     - Added code to vagrant file to copy secrets.yml from /vagrant/ to
+       /home/vagrant/project/ansible/vars/secrets.yml
+
+## 11-Streaming-VM
+     - Created roles/streaming/tasks/main.yml
+     - Created roles/streaming/handlers/main.yml
+     - Created roles/streaming/templates/nginx.conf.j2
+     - Updated site.yml to include the streaming VM
+     - Added code to vagrant file to create /var/www/videos and copy the .mp4-file from /vagrant/
+
+ ### Verification:
+  **Run playbook**
+  ```
+ansible-playbook site.yml -v
+```
+
+  **Verify that the streaming-server is serving files**
+  ```
+curl -I http://192.168.56.15/videos/nitflix.mp4
+```
+*Expected result:*
+```
+HTTP/1.1 200 OK
+Content-Type: video/mp4
+```
+
+  **Verify the entire chain via the loadbalancer**
+  ```
+curl http://192.168.56.11/
+```
+*Expected result:*
+```
+Nitflix HTML page with the video player
+```
+
+  **Verify thought web browser**
+```
+http://192.168.56.11
+```
+*Expected result:*
+```
+Nitflix webpage that allows to play the video (.mp4)
+```
+
+## 12-Verification-Script
+     - Added verification script (/ansible/verify.sh)
+     - Changed vagrant file to allow access to /ansible/verify.sh
+
+### Verification:
+  **After running playbook, run:**
+  ```
+./verify.sh
+```
+
+*Expected result:*
+
+```
+══ 1. Ansible connection (ping) ══
+[OK]   Ansible ping → 192.168.56.11
+[OK]   Ansible ping → 192.168.56.12
+[OK]   Ansible ping → 192.168.56.13
+[OK]   Ansible ping → 192.168.56.14
+[OK]   Ansible ping → 192.168.56.15
+
+══ 2. Systemd services ══
+[OK]   flask.service active → 192.168.56.12
+[OK]   flask.service active → 192.168.56.13
+[OK]   nginx.service active → 192.168.56.11
+[OK]   nginx.service active → 192.168.56.15
+[OK]   postgresql.service active → 192.168.56.14
+
+══ 3. HTTP-response from Flask (webbservers) ══
+[OK]   Flask /health HTTP 200 → 192.168.56.12:5000
+[OK]   Flask /health HTTP 200 → 192.168.56.13:5000
+
+══ 4. Load balancing (round-robin) ══
+[INFO] Curl 1 → webserver1 (192.168.56.12)
+[INFO] Curl 2 → webserver2 (192.168.56.13)
+[INFO] Curl 3 → webserver1 (192.168.56.12)
+[INFO] Curl 4 → webserver2 (192.168.56.13)
+[OK]   Round-robin confirmed — responses alternate between servers
+
+══ 5. HTML-response via the load balancer ══
+[OK]   Loadbaring returns HTTP 200
+[OK]   HTML contain 'Nitflix'
+
+══ 6. Database accessible from web servers ══
+[OK]   PostgreSQL port 5432 reachable from webserver1
+
+══ 7. Streaming server ══
+[OK]   Video file available on the streaming server (HTTP 200)
+
+══ Summary ══
+
+  Approved:    17 / 17
+  Failed:  0 / 17
+
+ All checks passed — Nitflix is ready!
+```
+ Note: *This is after changes in branch 13-Clean-up to better visualize round-robin*
+ 
+## 13-Clean-up
+     - Removed /roles/control-map due to not being used
+     - Translated all language to Engling
+     - Added comments on some files that needed extra clarifications
+     - Changed section/test 4 in the verification script to better visualize the curl command (round-robin) working
+     - Removed /health from /roles/loadbalancer/templates/nginx.conf.j2 due to it creating errors on test 4 when running verification script
+     - Changed clone-location in vagrant file to main instead of this branch before final merge with main
 
