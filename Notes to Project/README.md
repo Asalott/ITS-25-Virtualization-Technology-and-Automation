@@ -1,6 +1,6 @@
 # **Streaming service**
 
-> This project is a fully automated simulation of a simple streaming service with six total VMs that are configured via Ansible and created with Vagrant.
+> This project is a fully automated simulation of a simple streaming service with six VMs created with Vagrant and configured via Ansible. The entire infrastructure is reproducible. Running `vagrant destroy && vagrant up` followed by `ansible-playbook site.yml` will produce an identical environment from scratch, with no manual steps required beyond providing a `secrets.yml` file.
 
 ______
 ## **Table of contents**
