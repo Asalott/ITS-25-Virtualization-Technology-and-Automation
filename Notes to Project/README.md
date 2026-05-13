@@ -14,7 +14,7 @@ ______
 - [Securityanalisys](#Securityanalisys)
 - [Validation](#Validation)
 - [Design and Architecture](#Design%20and%20Architecture)
-- [Branch- and patchnotes](#Branch-%20and%20patchnotes)
+- [Branch- and patchnotes](#Branch-andpatchnotes)
 
 _________
 ## **Architecture**
