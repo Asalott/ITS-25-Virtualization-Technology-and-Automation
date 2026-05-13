@@ -270,12 +270,12 @@ ____
 
 | VM        | Roll              | IP-address    | port forwarding   | Deskription                                                                                   |
 | --------- | ----------------- | ------------- | ----------------- | --------------------------------------------------------------------------------------------- |
-| Control   | Ansible Control   | 192.168.56.10 | -                 | Acts as the Ansible control node. It clones the project repository from GitHub on boot, generates an SSH key pair, and distributes the public key to all other VMs. No applications run here — it only manages the infrastructure.       |
+| Control   | Ansible Control   | 192.168.56.10 | -                 | Acts as the Ansible control node. It clones the project repository from GitHub on boot, generates an SSH key pair, and distributes the public key to all other VMs. No applications run here - it only manages the infrastructure.       |
 | LB        | Loadbalancer      | 192.168.56.11 | : 80 -> host 8080 | Runs nginx as a load balancer, distributing incoming HTTP traffic on port 80 across the two web servers using round-robin. Accessible from the host machine at http://192.168.56.11.             |
 | web1      | Web server | 192.168.56.12 | -                 | Runs a Flask application via Gunicorn on port 5000. Fetches video metadata from the database using SQLAlchemy and renders the Nitflix web page. Managed as a systemd service that starts automatically on boot.                                                                 |
-| web2      | Web server | 192.168.56.13 | -                 | Identical to Webserver1 — runs the same Flask application via Gunicorn on port 5000. Together with Webserver1 it provides high availability and load distribution.                                                                 |
-| database  | Database server    | 192.168.56.14 | -                 | Runs PostgreSQL on port 5432. Stores video metadata (title, filepath, upload date, views). Only accessible from within the private network — the web servers connect to it via SQLAlchemy. |
-| streaming | Streaming server   | 192.168.56.15 | -                 | Runs nginx as a static file server, serving video files from /var/www/videos/ on port 80. The filepath stored in the database points here, and the client's browser fetches the video directly from this VM.                                                 |
+| web2      | Web server | 192.168.56.13 | -                 | Identical to Webserver1. Runs the same Flask application via Gunicorn on port 5000. Together with Webserver1 it provides high availability and load distribution.                                                                 |
+| database  | Database server    | 192.168.56.14 | -                 | Runs PostgreSQL on port 5432. Stores video metadata (title, filepath, upload date, views). Only accessible from within the private network. The web servers connect to it via SQLAlchemy. |
+| streaming | Streaming server   | 192.168.56.15 | -                 | Runs nginx as a static file server and serving video files from /var/www/videos/ on port 80. The filepath stored in the database points here and the client's browser fetches the video directly from this VM.                                                 |
 
 __________
 ## **Map structure**
