@@ -269,7 +269,7 @@ _________
 ____
 ## **Environment and IP addresses**
 
-| VM        | Roll              | IP-address    | port forwarding   | Deskription                                                                                   |
+| VM        | Roll              | IP-address    | port forwarding   | Description                                                                                   |
 | --------- | ----------------- | ------------- | ----------------- | --------------------------------------------------------------------------------------------- |
 | Control   | Ansible Control   | 192.168.56.10 | -                 | Acts as the Ansible control node. It clones the project repository from GitHub on boot, generates an SSH key pair, and distributes the public key to all other VMs. No applications run here - it only manages the infrastructure.       |
 | LB        | Loadbalancer      | 192.168.56.11 | : 80 -> host 8080 | Runs nginx as a load balancer, distributing incoming HTTP traffic on port 80 across the two web servers using round-robin. Accessible from the host machine at http://192.168.56.11.             |
@@ -477,12 +477,19 @@ There is none
 ---
 ## **Securityanalisys**
 
-### **Curent Shortcomings**
-#### **1: No firewall rules**
+### Remaining shortcomings
+#### **shortcomings 1: No firewall rules**
+The project currently has no firewall rules, meaning the Windows host can communicate directly with both the streaming VM and the database VM. This is not ideal as it could allow an attacker to manipulate or steal data stored on those servers.
 
-####  **2: Unencrypted comunications**
+To mitigate this, firewall rules should be implemented to restrict direct access to the streaming and database VMs from outside the internal network.
 
-#### **3: idk**
+This risk is accepted because this is a lab environment and is only meant to demonstrate how a basic streaming service is structured, but if we had had more time we would definitely have added at least basic firewall rules to the project.
+####  ** shortcomings 2:  No DRM protection**
+The current streaming server does not have DRM protection for the videos, making it possible for anyone to go into the site and download the source file directly from the streaming VM, making it quite easy to steal the hosted content.
+
+To mitigate this we could implement token-based URL signing, which is available in Nginx. However this is not used on real streaming servers as they use more complex solutions like Google Widevine or Apple FairPlay. Token-based URL signing would still make it significantly harder to simply download the source video directly.
+
+This risk is accepted because this is a lab environment and is only meant to demonstrate how a basic streaming service is structured, if we hade had more time we would have added token-based URL signing with Nginx for basic DRM protection.
 
 ____
 
