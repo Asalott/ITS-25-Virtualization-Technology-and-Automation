@@ -157,7 +157,7 @@ The Flask application is simple with two endpoints:
 - `/` Returns the `index.html` file that contains the entire website.
 - `/health` Simple health check for the Flask application.
 
-The Flask application also uses the SQLAlchemy Python library to connect the database table to the Flask application. This is done via the 
+The Flask application also uses the SQLAlchemy Python library to connect the database table to the Flask application. This is done using the following configuration:
 
 ```python
 app.config["SQLALCHEMY_DATABASE_URI"] = (
@@ -232,7 +232,7 @@ The file `/vagrant/secrets.yml` must be created locally and is never committed
 
 Copy the variables from the example secrets file and fill in real values.
 
-The file should be available via on the control node via the shared vagrant folder .`vagrant`.
+The file should be available on the control node via the shared vagrant folder .`vagrant`.
 
 ---
 ## **Security**
