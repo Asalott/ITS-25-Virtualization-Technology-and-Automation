@@ -450,8 +450,8 @@ ________
 
 #### **Programs that must be installed on the Windows host for this project to work.**
 
-- [VirtualBox ](https://www.virtualbox.org) —
-- [Vagrant](https://developer.hashicorp.com/vagrant) —
+- [VirtualBox ](https://www.virtualbox.org) — Tested using version X.X
+- [Vagrant](https://developer.hashicorp.com/vagrant) — Tested useing version X.X
 - [Git](https://git-scm.com/install/windows)
 
 ### **Hardware requirements**
