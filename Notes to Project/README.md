@@ -373,6 +373,12 @@ In the `seed.sql` file the permissions are also set so the web servers can acc
 The reason no `id` is inserted is because the `id` column in a SQL database often uses auto increment, meaning the value increases by itself. If a database table already exists it does nothing.
 
 ### **Flask application (app.py)**
+The Flask application is simple with two endpoints:
+
+- `/` Returns the `index.html` file that contains the entire website.
+- `/health` Simple health check for the Flask application.
+
+The Flask application also uses the SQLAlchemy Python library to connect the database table to the Flask application. This is done via the `os.environ.get` command and the variables are stored in the `vars/vars.yml` and `secrets.yml` files. There is also a fallback hardcoded variable in `DB_HOST`, so in the case that the `db_host` variable is somehow empty it falls back to `192.168.56.14`, which is the IP address of the database VM.
 
 ________
 
