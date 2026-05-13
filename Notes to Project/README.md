@@ -7,7 +7,7 @@ ______
 - [Architecture](#Architecture)
 - [Environment and IP addresses](#Environment-and-IP-addresses)
 - [Map structure](#Map-structure)
-- [Componence](#Componence)
+- [Components](#Components)
 - [Requirements and prerequisites](#Requirements-and-prerequisites)
 - [Getting started](#Getting-started)
 - [Security](#Security)
@@ -96,7 +96,7 @@ repo/
 
 ___________
 
-## **Componence**
+## **Components**
 
 ### **Vagrantfile**
 
