@@ -157,10 +157,12 @@ The Flask application is simple with two endpoints:
 
 The Flask application also uses the SQLAlchemy Python library to connect the database table to the Flask application. This is done via the 
 
-`app.config["SQLALCHEMY_DATABASE_URI"] = (
+```python
+app.config["SQLALCHEMY_DATABASE_URI"] = (
     f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}"
 )
-db = SQLAlchemy(app)` 
+db = SQLAlchemy(app)
+```
 
 Command and the variables are stored in the `vars/vars.yml` and `secrets.yml` files. There is also a fallback hardcoded variable in `DB_HOST`, so in the case that the `db_host` variable is somehow empty it falls back to `192.168.56.14`, which is the IP address of the database VM.
 
