@@ -245,7 +245,7 @@ Database credentials (db_user and db_password) are stored in secrets.yml, which 
 All VMs communicate over an isolated host-only network (192.168.56.0/24). The database VM has no port forwarding and is not reachable from outside the private network. Access to the database is restricted at the application level through PostgreSQL's pg_hba.conf, which only permits authenticated connections from within the subnet. Note that no firewall (UFW) is configured — all ports are currently open between VMs on the internal network. This is identified as a security gap in the Security Analysis section.
 
 #### **SSH key-based authentication**
-The Ansible control node authenticates to all other VMs using an ed25519 key pair generated automatically at boot. Password-based SSH authentication is never used. *Note that host_key_checking = False is set in ansible.cfg — read Shortcoming 4 in the next part for more information about this.
+The Ansible control node authenticates to all other VMs using an ed25519 key pair generated automatically at boot. Password-based SSH authentication is never used. *Note that host_key_checking = False is set in ansible.cfg — read Shortcoming 5 in the next part for more information about this.
 
 #### **Service isolation**
 Each service runs on a dedicated VM. If a web server is compromised, the attacker does not have direct access to the database or streaming server.
@@ -253,31 +253,43 @@ Each service runs on a dedicated VM. If a web server is compromised, the attacke
 ---
 ## **Security Analysis**
 ### Remaining shortcomings
+
 #### **Shortcoming 1: No firewall rules**
 The project currently has no firewall rules, meaning the Windows host can communicate directly with both the streaming VM and the database VM. This is not ideal as it could allow an attacker to manipulate or steal data stored on those servers.
 
 To mitigate this, firewall rules should be implemented to restrict direct access to the streaming and database VMs from outside the internal network.
 
 This risk is accepted because this is a lab environment and is only meant to demonstrate how a basic streaming service is structured, but if we had had more time we would definitely have added at least basic firewall rules to the project.
+
 ####  **Shortcoming 2:  No DRM protection**
 The current streaming server does not have DRM protection for the videos, making it possible for anyone to go into the site and download the source file directly from the streaming VM, making it quite easy to steal the hosted content.
 
 To mitigate this we could implement token-based URL signing, which is available in Nginx. However this is not used on real streaming servers as they use more complex solutions like Google Widevine or Apple FairPlay. Token-based URL signing would still make it significantly harder to simply download the source video directly.
 
 This risk is accepted because this is a lab environment and is only meant to demonstrate how a basic streaming service is structured, if we hade had more time we would have added token-based URL signing with Nginx for basic DRM protection.
-#### **Shortcomings 3: There is no monitoring**
-The current system does not have a monitoring program to detect suspicious network traffic or attacks such as DoS attacks or unauthorized access attempts.
 
-To mitigate this risk would be to install som kind of network monitoring program like snort or AIDE that are *Intrusion Detection Systems* (IDS).
+#### **Shortcomings 3: Poor logging**
+Flask logs are automatically collected by journald through systemd with no additional configuration required. When the flask.service systemd unit is running, all output from Flask and Gunicorn (including errors, requests and stack traces) is captured and stored automatically on each web server.
+
+While journald captures Flask and Gunicorn output locally, logging coverage across the system is limited. Logs are stored on each individual VM with no centralized collection, meaning an administrator would need to SSH into each machine separately to investigate an incident. nginx access logs on the load balancer and streaming server are not monitored or forwarded, and PostgreSQL is not configured to log queries or failed authentication attempts. There are also no automated alerts if a service goes down or behaves unexpectedly — verify.sh provides a manual snapshot but is not a substitute for continuous monitoring. In a production environment, a centralized solution such as the ELK stack or Grafana Loki would be used to collect and correlate logs from all services in one place, with automated alerting on anomalies.
 
 This risk is accepted because this is a lab environment and is only meant to demonstrate how a basic streaming service is structured.
-#### **Shortcoming 4:  Only one Streaming server**
+
+#### **Shortcomings 4: Missing intrusion detection and file integrity monitoring**
+The system currently has no network-based intrusion detection or file integrity monitoring in place. A tool such as *Snort* could be deployed on the load balancer to monitor incoming network traffic and alert on suspicious patterns.
+
+Similarly, *AIDE* (Advanced Intrusion Detection Environment) could be used to monitor critical system files on each VM for unexpected changes. If an attacker were to gain access and modify configuration files, binaries or the Flask application itself, there would currently be no mechanism to detect it. In a production environment, both tools would be considered baseline security controls.
+
+As this is a lab enviroment, proceeding without these systems is accepted.
+
+#### **Shortcoming 5:  Only one Streaming server**
 The current architecture has a single point of failure on the streaming server, if that VM goes down the entire streaming service goes down.
 
 To mitigate this risk, a load balancing VM and an additional streaming server VM could be implemented, so that one VM can go down without the entire service stopping. If possible, a failover load balancing VM could also be added for both the web server VMs and streaming server VMs to make the system even more redundant.
 
 This risk is accepted because this is a lab environment and is only meant to demonstrate how a basic streaming service is structured, and because we did not have the resources to run all those VMs.
-#### **Shortcoming 5:  Only one Streaming server**
+
+#### **Shortcoming 6: host_key_checking = False**
 Currently we have `host_key_checking = False` which allows the Ansible controller to reach the other VMs. Without it the Ansible controller could not reach them because its SSH key could not be verified, as we do not have a certificate authority to verify the SSH keys.
 
 To mitigate this risk we would have to set up a certificate authority VM in this lab environment to authenticate the SSH keys of the VMs.
