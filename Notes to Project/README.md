@@ -20,14 +20,14 @@ ______
 
 _________
 ## **Architecture**
-![Topology](topolgy.png)
+![Topology](topology.png)
 ____
 ## **Environment and IP addresses**
 
 | VM        | Roll              | IP-address    | port forwarding   | Description                                                                                   |
 | --------- | ----------------- | ------------- | ----------------- | --------------------------------------------------------------------------------------------- |
 | Control   | Ansible Control   | 192.168.56.10 | -                 | Acts as the Ansible control node. It clones the project repository from GitHub on boot, generates an SSH key pair, and distributes the public key to all other VMs. No applications run here - it only manages the infrastructure.       |
-| LB        | Loadbalancer      | 192.168.56.11 | : 80 -> host 8080 | Runs nginx as a load balancer, distributing incoming HTTP traffic on port 80 across the two web servers using round-robin. Accessible from the host machine at http://192.168.56.11.             |
+| LB        | Load balancer      | 192.168.56.11 | : 80 -> host 8080 | Runs nginx as a load balancer, distributing incoming HTTP traffic on port 80 across the two web servers using round-robin. Accessible from the host machine at http://192.168.56.11.             |
 | web1      | Web server | 192.168.56.12 | -                 | Runs a Flask application via Gunicorn on port 5000. Fetches video metadata from the database using SQLAlchemy and renders the Nitflix web page. Managed as a systemd service that starts automatically on boot.                                                                 |
 | web2      | Web server | 192.168.56.13 | -                 | Identical to Webserver1. Runs the same Flask application via Gunicorn on port 5000. Together with Webserver1 it provides high availability and load distribution.                                                                 |
 | database  | Database server    | 192.168.56.14 | -                 | Runs PostgreSQL on port 5432. Stores video metadata (title, filepath, upload date, views). Only accessible from within the private network. The web servers connect to it via SQLAlchemy. |
@@ -46,7 +46,7 @@ repo/
 │
 ├── ansible/
 │   ├── ansible.cfg                     # Ansible settings: inventory path, host_key_checking, pipelining
-│   ├── inventory.ini                   # Lists all VMs with IPs and groups (loadbalancer, webservers, etc.)
+│   ├── inventory.ini                   # Lists all VMs with IPs and groups (load balancer, webservers, etc.)
 │   ├── site.yml                        # Master playbook — runs all roles in correct order
 │   │
 │   ├── vars/
@@ -124,16 +124,16 @@ This file also controls the order in which the roles are run:
 
 The streaming VM is configured first because the database uses a URL it creates. In reality it would probably not matter, but it is a precaution. After the streaming VM and the database VM are configured, the web servers are configured because they both rely on the database and streaming server to work. Lastly the load balancer is configured because it needs the web servers up and running.
 
-### **Role loadbalancer**
+### **Role: Load balancer**
 The load balancer role installs and configures Nginx to redirect all traffic to the web servers, this allows the web servers to share the load for the site. It gets the web server IPs from the `inventory.ini` file. The load balancer is configured with a `50/50` balance, meaning both web servers receive `50%` of the incoming traffic. This can be changed by editing the `/templates/nginx.conf.j2` file.
 
-### **Role Webservers**
+### **Role: Webservers**
 The web server role installs all the programs listed in `/files/requirements.txt` and configures Gunicorn and Flask. It also uses the Python library SQLAlchemy to connect the database table in `seed.sql` to the Flask `app.py` and the `index.html` that is loaded in the Flask app. This makes the HTML file able to load values from the database with out php code.
 
-### Role Streaming
+### Role: Streaming
 The streaming role installs and configures Nginx for the purpose of acting as a streaming server. It listens on port `80` and uses the `Accept-Ranges bytes` header which allows the browser to request the video in small chunks, enabling the video to play while it is still loading. It creates a folder called `/var/www/videos` where all the videos are stored, and all files placed in that folder become available to stream if they are the correct format.
 
-### Role Database
+### Role: Database
 The database role installs PostgreSQL and creates a database table with the `seed.sql` file with these columns:
 
 - `id` SERIAL PRIMARY KEY
@@ -268,7 +268,7 @@ The current streaming server does not have DRM protection for the videos, making
 
 To mitigate this we could implement token-based URL signing, which is available in Nginx. However this is not used on real streaming servers as they use more complex solutions like Google Widevine or Apple FairPlay. Token-based URL signing would still make it significantly harder to simply download the source video directly.
 
-This risk is accepted because this is a lab environment and is only meant to demonstrate how a basic streaming service is structured, if we hade had more time we would have added token-based URL signing with Nginx for basic DRM protection.
+This risk is accepted because this is a lab environment and is only meant to demonstrate how a basic streaming service is structured, if we had more time we would have added token-based URL signing with Nginx for basic DRM protection.
 
 #### **Shortcomings 3: Poor logging**
 Flask logs are automatically collected by journald through systemd with no additional configuration required. When the flask.service systemd unit is running, all output from Flask and Gunicorn (including errors, requests and stack traces) is captured and stored automatically on each web server.
@@ -304,7 +304,7 @@ ____
 To validate that everything is working correctly, run the automated validation script.
 
 ```bash
-cd home/vagrant/project/ansible
+cd /home/vagrant/project/ansible
 
 ./verify.sh
 ```
@@ -347,7 +347,7 @@ The script validates the following
 [OK]   Round-robin confirmed — responses alternate between servers
 
 ══ 5. HTML-response via the load balancer ══
-[OK]   Loadbaring returns HTTP 200
+[OK]   Load balancer returns HTTP 200
 [OK]   HTML contain 'Nitflix'
 
 ══ 6. Database accessible from web servers ══
@@ -389,7 +389,7 @@ SQLAlchemy is a Python based library that allows you to use Python code to inter
 
 Flask does not allow you to natively use a SQL database, so either way we would have needed a library, but we decided on SQLAlchemy because it uses Python code and not SQL code, and we are better at Python than SQL.
 
-### **Why do we use Nginx for both the load baring vm and the streaming vm**
+### **Why do we use Nginx for both the load balancing VM and the streaming VM**
 We use Nginx on both the load balancing VM and the streaming VM. For the load balancing VM, Nginx is one of the most widely used tools for that purpose in the world, being easy to install and configure, and relatively lightweight and fast, making it an extremely good tool for that role.
 
 For the streaming VM we chose it because Nginx has a technique called sendfile, which allows it to send a file over the network without copying it through the application first, making it really efficient at sending large static files, which is exactly what a streaming service needs.
@@ -504,8 +504,8 @@ We will also add netcat to automatically install to enable the loop to work:
 apt-get install -y ansible git netcat-openbsd
  
  
-Another solution would be to change the inventory.ini-file to not enable "StrictHostKeyChecking", which automatically accepts all hostkeys without asking. This would solve the same problem, but that would also compromise the security due to disabling the SSH-keyverification permanently. The known_host solution is saving the keys during start-up and if the keys changes och gets manupilated the SSH will alarm - which is much safer.
- 
+Another solution would be to change the inventory.ini-file to not enable "StrictHostKeyChecking", which automatically accepts all hostkeys without asking. This would solve the same problem, but that would also compromise the security due to disabling the SSH-keyverification permanently. The known_host solution is saving the keys during start-up and if the keys changes or gets manipulated the SSH will alarm - which is much safer.
+
  
 ### UPDATE:
 Due to problems with the loop not finding the VMs after creating the control node we changed to using vagrants SSH-keys instead of our own. This led to changes in both the vagrant file and the inventory.ini.
@@ -524,14 +524,14 @@ This resulted in working pings between Control to all VMs! This concludes this b
      - Updated tasks/main.yml with remove default site
      - Added /handlers/main.yml
      - Added /templates/nginx.conf.j2
-     - Changed all "Loadbaring"-names to "Loadbalancer"
+     - Changed all "Loadbaring"-names to "Load balancer"
 
 ## 09-Webbserver-1-VM 
 Clarification: This branch is for both webserver1 and webserver2
 
      - Created roles/webserver/files/requirements.txt
      - Created roles/webserver/files/app.py 
-       (simplified version to test functionality - it will only return hostname to verify loadbalancer without a database)
+       (simplified version to test functionality - it will only return hostname to verify load balancer without a database)
      - Created roles/webserver/tasks/main.yml
      - Created roles/webserver/templates/flask.service.j2
      - Created roles/webserver/handlers/main.yml
@@ -550,7 +550,7 @@ ansible-playbook site.yml -v
 ansible webservers -m command -a "systemctl status flask"
 ```
 
-  **Test through loadbalancer**
+  **Test through Load balancer**
   ```
 curl http://192.168.56.11/
 curl http://192.168.56.11/health
@@ -596,7 +596,7 @@ HTTP/1.1 200 OK
 Content-Type: video/mp4
 ```
 
-  **Verify the entire chain via the loadbalancer**
+  **Verify the entire chain via the Load balancer**
   ```
 curl http://192.168.56.11/
 ```
@@ -653,7 +653,7 @@ Nitflix webpage that allows to play the video (.mp4)
 [OK]   Round-robin confirmed — responses alternate between servers
 
 ══ 5. HTML-response via the load balancer ══
-[OK]   Loadbaring returns HTTP 200
+[OK]   Load balancer returns HTTP 200
 [OK]   HTML contain 'Nitflix'
 
 ══ 6. Database accessible from web servers ══
