@@ -423,7 +423,9 @@ cd ~/home/vagrant/project/ansible
 ansible-playbook -i inventory.yml site.yml -v
 
 # 6. validate
-bash ./verify.sh
+cd home/vagrant/project/ansible
+
+./verify.sh
 ```
 
 ### **Expectations**
@@ -459,7 +461,9 @@ ____
 To validate that everything is working correctly, run the automated validation script.
 
 ```bash
-Bash ansible/test/verify.sh
+cd home/vagrant/project/ansible
+
+./verify.sh
 ```
 
 The script validates the following
