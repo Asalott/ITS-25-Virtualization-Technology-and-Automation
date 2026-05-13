@@ -491,6 +491,14 @@ To mitigate this we could implement token-based URL signing, which is available 
 
 This risk is accepted because this is a lab environment and is only meant to demonstrate how a basic streaming service is structured, if we hade had more time we would have added token-based URL signing with Nginx for basic DRM protection.
 
+#### **shortcomings 3: There is no monitoring**
+The current system does not have a monitoring program to detect suspicious network traffic or attacks such as DoS attacks or unauthorized access attempts.
+
+To mitigate this risk would be to install som kind of network monitoring program like snort or AIDE that are *Intrusion Detection Systems* (IDS).
+
+This risk is accepted because this is a lab environment and is only meant to demonstrate how a basic streaming service is structured.
+
+
 ____
 
 ## **Validation**
