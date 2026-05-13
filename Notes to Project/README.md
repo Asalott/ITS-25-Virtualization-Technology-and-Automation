@@ -365,6 +365,11 @@ ____
 
 ## **Design and Architecture**
 
+### **Why we chose to use Hypervisor instead of Containers**
+This project uses a Type 2 hypervisor (VirtualBox via Vagrant) rather than containers (e.g. Docker). Hypervisors virtualize entire machines where each VM has its own kernel, OS and network stack. This is providing strong isolation between services. A compromised web server does not share a kernel with the database which would not be guaranteed in a container-based setup where all services share the host kernel.
+
+Containers would have been a valid choice for the Flask application itself, but achieving the same level of network segmentation and service isolation that Vagrant provides out of the box would have required an orchestrator such as Kubernetes. The trade-off is resource efficiency as each VM consumes a fixed 1024 MB of RAM regardless of actual load whereas containers would use significantly less. This is an acceptable trade-off in a lab environment focused on infrastructure architecture rather than resource efficiency.
+
 ### **Why are there two web servers and a load balancer?**
 If we had only used one web server and no load balancer, that would have made the project easier, but we decided to add some more complexity by doing that to simulate how a real streaming service is set up. We also could have added another streaming server and a load balancer to have something even more like a real streaming service, but we decided not to do that.
 
