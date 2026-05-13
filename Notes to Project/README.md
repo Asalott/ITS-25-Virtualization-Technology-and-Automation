@@ -230,7 +230,47 @@ Nitflix webpage that allows to play the video (.mp4)
 *Expected result:*
 
 ```
-*Insert test results here*
+══ 1. Ansible connection (ping) ══
+[OK]   Ansible ping → 192.168.56.11
+[OK]   Ansible ping → 192.168.56.12
+[OK]   Ansible ping → 192.168.56.13
+[OK]   Ansible ping → 192.168.56.14
+[OK]   Ansible ping → 192.168.56.15
+
+══ 2. Systemd services ══
+[OK]   flask.service active → 192.168.56.12
+[OK]   flask.service active → 192.168.56.13
+[OK]   nginx.service active → 192.168.56.11
+[OK]   nginx.service active → 192.168.56.15
+[OK]   postgresql.service active → 192.168.56.14
+
+══ 3. HTTP-response from Flask (webbservers) ══
+[OK]   Flask /health HTTP 200 → 192.168.56.12:5000
+[OK]   Flask /health HTTP 200 → 192.168.56.13:5000
+
+══ 4. Load balancing (round-robin) ══
+[INFO] Curl 1 → webserver1 (192.168.56.12)
+[INFO] Curl 2 → webserver2 (192.168.56.13)
+[INFO] Curl 3 → webserver1 (192.168.56.12)
+[INFO] Curl 4 → webserver2 (192.168.56.13)
+[OK]   Round-robin confirmed — responses alternate between servers
+
+══ 5. HTML-response via the load balancer ══
+[OK]   Loadbaring returns HTTP 200
+[OK]   HTML contain 'Nitflix'
+
+══ 6. Database accessible from web servers ══
+[OK]   PostgreSQL port 5432 reachable from webserver1
+
+══ 7. Streaming server ══
+[OK]   Video file available on the streaming server (HTTP 200)
+
+══ Summary ══
+
+  Approved:    17 / 17
+  Failed:  0 / 17
+
+ All checks passed — Nitflix is ready!
 ```
  Note: *This is after changes in branch 13-Clean-up to better visualize round-robin*
  
