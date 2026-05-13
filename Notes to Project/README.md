@@ -5,7 +5,7 @@
 ______
 ## **Table of contents**
 - [Architecture](#Architecture)
-- [Environment and IP addresses](#Environment%20and%20IP%20addresses)
+- [Environment and IP addresses](#Environment-and-IP-addresses)
 - [Map structure](#Map%20structure)
 - [Componence](#Componence)
 - [Requirements and prerequisites](#Requirements%20and%20prerequisites)
