@@ -217,6 +217,29 @@ http://192.168.56.11
 Nitflix webpage that allows to play the video (.mp4)
 ```
 
+## 12-Verification-Script
+     - Added verification script (/ansible/verify.sh)
+     - Changed vagrant file to allow access to /ansible/verify.sh
+
+### Verification:
+  **After running playbook, run:**
+  ```
+./verify.sh
+```
+
+*Expected result:*
+ **Comment: This is after changes in branch 13-Clean-up to better visualize round-robin**
+```
+*Insert test results here*
+```
+
+## 13-Clean-up
+     - Removed /roles/control-map due to not being used
+     - Translated all language to Engling
+     - Added comments on some files that needed extra clarifications
+     - Changed section/test 4 in the verification script to better visualize the curl command (round-robin) working
+     - Removed /health from /roles/loadbalancer/templates/nginx.conf.j2 due to it creating errors on test 4 when running verification script
+
 # Readme
 _________
 
