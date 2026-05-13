@@ -280,7 +280,7 @@ The system currently has no network-based intrusion detection or file integrity 
 
 Similarly, *AIDE* (Advanced Intrusion Detection Environment) could be used to monitor critical system files on each VM for unexpected changes. If an attacker were to gain access and modify configuration files, binaries or the Flask application itself, there would currently be no mechanism to detect it. In a production environment, both tools would be considered baseline security controls.
 
-As this is a lab enviroment, proceeding without these systems is accepted.
+As this is a lab environment, proceeding without these systems is accepted.
 
 #### **Shortcoming 5:  Only one Streaming server**
 The current architecture has a single point of failure on the streaming server, if that VM goes down the entire streaming service goes down.
