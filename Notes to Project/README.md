@@ -280,6 +280,7 @@ Nitflix webpage that allows to play the video (.mp4)
      - Added comments on some files that needed extra clarifications
      - Changed section/test 4 in the verification script to better visualize the curl command (round-robin) working
      - Removed /health from /roles/loadbalancer/templates/nginx.conf.j2 due to it creating errors on test 4 when running verification script
+     - Changed clone-location in vagrant file to main instead of this branch before final merge with main
 
 # Readme
 _________
