@@ -1,6 +1,8 @@
 # **Streaming service**
 
 > This project is a fully automated simulation of a simple streaming service with six VMs created with Vagrant and configured via Ansible. The entire infrastructure is reproducible. Running `vagrant up` followed by `ansible-playbook site.yml -v` inside the control VM will produce an identical environment from scratch, with no manual steps required beyond providing a `secrets.yml` file.
+>
+> The result can be verified by running `./verify.sh`, which automatically checks that all services are running and communicating correctly.
 
 ______
 ## **Table of contents**
