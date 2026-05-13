@@ -249,6 +249,12 @@ The current system does not have a monitoring program to detect suspicious netwo
 To mitigate this risk would be to install som kind of network monitoring program like snort or AIDE that are *Intrusion Detection Systems* (IDS).
 
 This risk is accepted because this is a lab environment and is only meant to demonstrate how a basic streaming service is structured.
+#### **shortcomings 4:  Only one Streaming server**
+The current architecture has a single point of failure on the streaming server — if that VM goes down the entire streaming service goes down.
+
+To mitigate this risk, a load balancing VM and an additional streaming server VM could be implemented, so that one VM can go down without the entire service stopping. If possible, a failover load balancing VM could also be added for both the web server VMs and streaming server VMs to make the system even more redundant.
+
+This risk is accepted because this is a lab environment and is only meant to demonstrate how a basic streaming service is structured, and because we did not have the resources to run all those VMs.
 
 
 ____
