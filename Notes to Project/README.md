@@ -228,11 +228,12 @@ Nitflix webpage that allows to play the video (.mp4)
 ```
 
 *Expected result:*
- **Comment: This is after changes in branch 13-Clean-up to better visualize round-robin**
+
 ```
 *Insert test results here*
 ```
-
+ **Note: *This is after changes in branch 13-Clean-up to better visualize round-robin* **
+ 
 ## 13-Clean-up
      - Removed /roles/control-map due to not being used
      - Translated all language to Engling
